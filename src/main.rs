@@ -2781,18 +2781,39 @@ fn main() {
     Solver::new().solve();
 }
 
-const EFF: i64 = 10;
+#[derive(Clone, Copy)]
+struct Param {
+    eff: i64,
+    power: usize,
+    exca_th: usize,
+}
+static mut PARAM: Param = Param {
+    eff: 10,
+    power: 100,
+    exca_th: 250,
+};
+fn get_param() -> &'static Param {
+    unsafe { &PARAM }
+}
+fn set_param(param: Param) {
+    unsafe {
+        PARAM = param;
+    }
+}
 const INF: i64 = 1i64 << 60;
 const DIR4: [(i64, i64); 4] = [(0, 1), (1, 0), (-1, 0), (0, -1)];
 
 mod state {
+    const HMAX: usize = 5000;
+    use crate::get_param;
     use crate::procon_reader::*;
     use crate::union_find::UnionFind;
     use crate::usize_move_delta::MoveDelta;
     pub struct State {
         n: usize,
         fixed: Vec<Vec<bool>>,
-        cum_atk: Vec<Vec<usize>>,
+        cum_attack: Vec<Vec<usize>>,
+        evaluate: Vec<Vec<Option<usize>>>,
         uf: UnionFind,
     }
     impl State {
@@ -2804,16 +2825,14 @@ mod state {
             Self {
                 n,
                 fixed: vec![vec![false; n]; n],
-                cum_atk: vec![vec![0; n]; n],
+                cum_attack: vec![vec![0; n]; n],
+                evaluate: vec![vec![None; n]; n],
                 uf,
             }
         }
         pub fn is_watered(&mut self, y: usize, x: usize) -> bool {
             let n = self.n;
             self.uf.same(n * n, y * n + x)
-        }
-        pub fn is_fixed(&self, y: usize, x: usize) -> bool {
-            self.fixed[y][x]
         }
         pub fn n(&self) -> usize {
             self.n
@@ -2829,8 +2848,8 @@ mod state {
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
-                    if self.fixed[y0][x] {
-                        valid_sm += self.cum_atk[y0][x];
+                    if let Some(weight) = self.evaluate[y0][x] {
+                        valid_sm += weight;
                         valid_norm += 1;
                     } else {
                         empty_norm += 1;
@@ -2839,8 +2858,8 @@ mod state {
             } else if x0 == x1 {
                 // vertical
                 for y in y0..=y1 {
-                    if self.fixed[y][x0] {
-                        valid_sm += self.cum_atk[y][x0];
+                    if let Some(weight) = self.evaluate[y][x0] {
+                        valid_sm += weight;
                         valid_norm += 1;
                     } else {
                         empty_norm += 1;
@@ -2859,12 +2878,12 @@ mod state {
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
-                    self.excavate_point(y0, x);
+                    self.excavate_point(y0, x, true);
                 }
             } else if x0 == x1 {
                 // horizontal
                 for y in y0..=y1 {
-                    self.excavate_point(y, x0);
+                    self.excavate_point(y, x0, true);
                 }
             } else {
                 unreachable!();
@@ -2894,18 +2913,34 @@ mod state {
             }
             true
         }
-        pub fn excavate_point(&mut self, y: usize, x: usize) {
-            let power = 100;
-            if !self.fixed[y][x] {
-                let mut attack_cnt = 0;
+        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) {
+            let power = get_param().power;
+            if self.fixed[y][x] {
+                return;
+            }
+            if force_break {
                 loop {
-                    attack_cnt += power;
+                    self.cum_attack[y][x] += power;
                     if Self::attack(y, x, power) {
+                        self.fixed[y][x] = true;
+                        self.evaluate[y][x] = Some(self.cum_attack[y][x]);
                         break;
                     }
                 }
-                self.fixed[y][x] = true;
-                self.cum_atk[y][x] = attack_cnt;
+            } else {
+                while self.cum_attack[y][x] < get_param().exca_th {
+                    self.cum_attack[y][x] += power;
+                    if Self::attack(y, x, power) {
+                        self.fixed[y][x] = true;
+                        self.evaluate[y][x] = Some(self.cum_attack[y][x]);
+                        break;
+                    }
+                }
+                if !self.fixed[y][x] {
+                    self.evaluate[y][x] = Some((self.cum_attack[y][x] + HMAX) / 2);
+                }
+            }
+            if self.fixed[y][x] {
                 let n = self.fixed.len();
                 for &(dy, dx) in crate::DIR4.iter() {
                     if let Some(ny) = y.move_delta(dy, 0, n - 1) {
@@ -2914,8 +2949,6 @@ mod state {
                         }
                     }
                 }
-            } else if cfg!(debug_assertions) && !self.fixed[y][x] {
-                debug_assert!(self.cum_atk[y][x] == 0);
             }
         }
         fn attack(y: usize, x: usize, p: usize) -> bool {
@@ -2968,19 +3001,19 @@ impl Solver {
     }
     fn excavate_keypoints(state: &mut State, keypoints: &[(usize, usize)]) {
         for &(y, x) in keypoints.iter() {
-            state.excavate_point(y, x);
+            state.excavate_point(y, x, true);
         }
     }
     fn excavate_observers(state: &mut State, observers: &[Vec<(usize, usize)>]) {
         for row in observers.iter() {
             for &(y, x) in row.iter() {
-                state.excavate_point(y, x);
+                state.excavate_point(y, x, false);
             }
         }
     }
     fn calc_observers(n: usize) -> Vec<Vec<(usize, usize)>> {
         let mut ys = BTreeSet::new();
-        for y in (0..n).step_by(EFF as usize) {
+        for y in (0..n).step_by(get_param().eff as usize) {
             ys.insert(y);
         }
         ys.insert(n - 1);
@@ -3000,7 +3033,6 @@ impl Solver {
         keypoints: &[(usize, usize)],
         observers: &[Vec<(usize, usize)>],
     ) -> Vec<Vec<(usize, usize)>> {
-
         let mut near_observers_for_earh_keypoint = vec![vec![]; keypoints.len()];
 
         let m = observers.len();
@@ -3053,11 +3085,15 @@ impl Solver {
                         for &oy in [y0, y1].iter() {
                             for &ox in [x0, x1].iter() {
                                 // adjust y, x
-                                if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
+                                if delta.chmin(
+                                    (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
+                                ) {
                                     con_pairs = vec![((ky, kx), (oy, kx)), ((oy, kx), (oy, ox))];
                                 }
                                 // adjust x, y
-                                if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
+                                if delta.chmin(
+                                    (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
+                                ) {
                                     con_pairs = vec![((ky, kx), (ky, ox)), ((ky, ox), (oy, ox))];
                                 }
                             }
@@ -3096,7 +3132,6 @@ impl Solver {
             let mut min_cost_watered_y = 0;
             let mut min_cost_watered_x = 0;
             for (hi, &(hy, hx)) in self.houses.iter().enumerate() {
-                debug_assert!(self.state.is_fixed(hy, hx));
                 if self.state.is_watered(hy, hx) {
                     continue;
                 }
@@ -3117,7 +3152,6 @@ impl Solver {
                     }
                     let y = observers[yi][xi].0;
                     let x = observers[yi][xi].1;
-                    debug_assert!(self.state.is_fixed(y, x));
 
                     if self.state.is_watered(y, x) && watered_dist.chmin(d) {
                         watered_y = y;
@@ -3129,7 +3163,6 @@ impl Solver {
                             if let Some(nxi) = xi.move_delta(dx, 0, m - 1) {
                                 let ny = observers[nyi][nxi].0;
                                 let nx = observers[nyi][nxi].1;
-                                debug_assert!(self.state.is_fixed(ny, nx));
                                 let nd = d + self.state.delta_line(y, x, ny, nx);
                                 if dist.entry((nyi, nxi)).or_insert(INF).chmin(nd) {
                                     pre.insert((ny, nx), (y, x));
@@ -3146,7 +3179,7 @@ impl Solver {
                     min_cost_watered_x = watered_x;
                 }
             }
-            
+
             let mut to_y = min_cost_watered_y;
             let mut to_x = min_cost_watered_x;
             while let Some(&(from_y, from_x)) = min_cost_pre.get(&(to_y, to_x)) {
@@ -3161,9 +3194,10 @@ impl Solver {
         Self::excavate_observers(&mut self.state, &observers);
         Self::excavate_keypoints(&mut self.state, &self.waters);
         Self::excavate_keypoints(&mut self.state, &self.houses);
-        
+
         let _ = Self::connect_keys_to_near_observers(&mut self.state, &self.waters, &observers);
-        let near_observers_for_each_house = Self::connect_keys_to_near_observers(&mut self.state, &self.houses, &observers);
+        let near_observers_for_each_house =
+            Self::connect_keys_to_near_observers(&mut self.state, &self.houses, &observers);
         self.connect_house_to_water(&observers, &near_observers_for_each_house);
     }
 }
