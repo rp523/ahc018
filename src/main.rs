@@ -2790,7 +2790,7 @@ struct Param {
 static mut PARAM: Param = Param {
     eff: 10,
     power: 100,
-    exca_th: 250,
+    exca_th: 100,
 };
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
