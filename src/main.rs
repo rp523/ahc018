@@ -3012,16 +3012,11 @@ impl Solver {
         }
     }
     fn calc_observers(n: usize) -> Vec<Vec<(usize, usize)>> {
-        let mut ys = BTreeSet::new();
-        for y in (0..n).step_by(get_param().eff as usize) {
-            ys.insert(y);
-        }
-        ys.insert(n - 1);
-        let xs = ys.clone();
         let mut observers = vec![];
-        for &y in ys.iter() {
+        let eff = get_param().eff as usize;
+        for y in ((eff / 2)..n).step_by(eff) {
             let mut row = vec![];
-            for &x in xs.iter() {
+            for x in ((eff / 2)..n).step_by(eff) {
                 row.push((y, x));
             }
             observers.push(row);
@@ -3037,86 +3032,42 @@ impl Solver {
 
         let m = observers.len();
         for (ki, &(ky, kx)) in keypoints.iter().enumerate() {
-            'foundround: for yi in 1..m {
-                for xi in 1..m {
-                    let y1 = observers[yi][xi].0;
-                    let x1 = observers[yi][xi].1;
-                    let y0 = observers[yi - 1][xi - 1].0;
-                    let x0 = observers[yi - 1][xi - 1].1;
-                    if (y0 <= ky) && (ky <= y1) && (x0 <= kx) && (kx <= x1) {
-                        if (ky, kx) == (y0, x0) {
-                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi - 1));
-                            break 'foundround;
+            let mut delta = None;
+            let mut near = None;
+            for yi in 0..m {
+                for xi in 0..m {
+                    let (oy, ox) = observers[yi][xi];
+                    if (ky, kx) == (oy, ox) {
+                        delta = Some(0);
+                        near = Some((yi, xi));
+                    }
+                    if ky == oy {
+                        // horizontal
+                        if delta.chmin((ox as i64 - kx as i64).abs()) {
+                            near = Some((yi, xi));
                         }
-                        if (ky, kx) == (y0, x1) {
-                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi));
-                            break 'foundround;
+                    }
+                    if kx == ox {
+                        // smaller vertical
+                        if delta.chmin((oy as i64 - ky as i64).abs()) {
+                            near = Some((yi, xi));
                         }
-                        if (ky, kx) == (y1, x0) {
-                            near_observers_for_earh_keypoint[ki].push((yi, xi - 1));
-                            break 'foundround;
-                        }
-                        if (ky, kx) == (y1, x1) {
-                            near_observers_for_earh_keypoint[ki].push((yi, xi));
-                            break 'foundround;
-                        }
-                        let mut delta = None;
-                        let mut con_pairs = vec![];
-                        for &oy in [y0, y1].iter() {
-                            if ky == oy {
-                                // smaller horizontal
-                                for &ox in [x0, x1].iter() {
-                                    if delta.chmin((ox as i64 - kx as i64).abs()) {
-                                        con_pairs = vec![((ky, kx), (ky, ox))];
-                                    }
-                                }
-                            }
-                        }
-                        for &ox in [x0, x1].iter() {
-                            if kx == ox {
-                                // smaller vertical
-                                for &oy in [y0, y1].iter() {
-                                    if delta.chmin((oy as i64 - ky as i64).abs()) {
-                                        con_pairs = vec![((ky, kx), (oy, kx))];
-                                    }
-                                }
-                            }
-                        }
-                        for &oy in [y0, y1].iter() {
-                            for &ox in [x0, x1].iter() {
-                                // adjust y, x
-                                if delta.chmin(
-                                    (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
-                                ) {
-                                    con_pairs = vec![((ky, kx), (oy, kx)), ((oy, kx), (oy, ox))];
-                                }
-                                // adjust x, y
-                                if delta.chmin(
-                                    (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
-                                ) {
-                                    con_pairs = vec![((ky, kx), (ky, ox)), ((ky, ox), (oy, ox))];
-                                }
-                            }
-                        }
-                        let (coy, cox) = con_pairs.iter().next_back().unwrap().1;
-                        if (coy, cox) == (y0, x0) {
-                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi - 1));
-                        } else if (coy, cox) == (y1, x0) {
-                            near_observers_for_earh_keypoint[ki].push((yi, xi - 1));
-                        } else if (coy, cox) == (y0, x1) {
-                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi));
-                        } else if (coy, cox) == (y1, x1) {
-                            near_observers_for_earh_keypoint[ki].push((yi, xi));
-                        } else {
-                            unreachable!();
-                        }
-                        for &((y, x), (ny, nx)) in &con_pairs {
-                            state.excavate_line(y, x, ny, nx);
-                        }
-                        //
-                        break 'foundround;
+                    }
+                    // adjust y, x
+                    if delta.chmin(
+                        (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
+                    ) {
+                        near = Some((yi, xi));
                     }
                 }
+            }
+            if let Some((yi, xi)) = near {
+                near_observers_for_earh_keypoint[ki].push((yi, xi));
+                let (oy, ox) = observers[yi][xi];
+                state.excavate_line(ky, kx, oy, kx);
+                state.excavate_line(oy, kx, oy, ox);
+            } else {
+                near_observers_for_earh_keypoint[ki].push((ky, kx));
             }
         }
         near_observers_for_earh_keypoint
