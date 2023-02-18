@@ -2781,6 +2781,10 @@ fn main() {
     Solver::new().solve();
 }
 
+const EFF: i64 = 10;
+const INF: i64 = 1i64 << 60;
+const DIR4: [(i64, i64); 4] = [(0, 1), (1, 0), (-1, 0), (0, -1)];
+
 mod state {
     use crate::procon_reader::*;
     use crate::union_find::UnionFind;
@@ -2891,7 +2895,7 @@ mod state {
             true
         }
         pub fn excavate_point(&mut self, y: usize, x: usize) {
-            let power = 5000;
+            let power = 100;
             if !self.fixed[y][x] {
                 let mut attack_cnt = 0;
                 loop {
@@ -2903,19 +2907,15 @@ mod state {
                 self.fixed[y][x] = true;
                 self.cum_atk[y][x] = attack_cnt;
                 let n = self.fixed.len();
-                for (dy, dx) in [(0, 1), (1, 0), (-1, 0), (0, -1)] {
+                for &(dy, dx) in crate::DIR4.iter() {
                     if let Some(ny) = y.move_delta(dy, 0, n - 1) {
                         if let Some(nx) = x.move_delta(dx, 0, n - 1) {
                             self.uf.unite(y * n + x, ny * n + nx);
                         }
                     }
                 }
-            } else {
-                if cfg!(debug_assertions) {
-                    if !self.fixed[y][x] {
-                        debug_assert!(self.cum_atk[y][x] == 0);
-                    }
-                }
+            } else if cfg!(debug_assertions) && !self.fixed[y][x] {
+                debug_assert!(self.cum_atk[y][x] == 0);
             }
         }
         fn attack(y: usize, x: usize, p: usize) -> bool {
@@ -2943,8 +2943,6 @@ struct Solver {
     state: State,
 }
 
-const EFF: i64 = 10;
-const INF: i64 = 1i64 << 60;
 impl Solver {
     fn new() -> Self {
         let n = read::<usize>();
@@ -2969,7 +2967,6 @@ impl Solver {
         }
     }
     fn excavate_keypoints(state: &mut State, keypoints: &[(usize, usize)]) {
-        let n = state.n();
         for &(y, x) in keypoints.iter() {
             state.excavate_point(y, x);
         }
@@ -3033,28 +3030,28 @@ impl Solver {
                         }
                         let mut delta = None;
                         let mut con_pairs = vec![];
-                        for oy in [y0, y1] {
+                        for &oy in [y0, y1].iter() {
                             if ky == oy {
                                 // smaller horizontal
-                                for ox in [x0, x1] {
+                                for &ox in [x0, x1].iter() {
                                     if delta.chmin((ox as i64 - kx as i64).abs()) {
                                         con_pairs = vec![((ky, kx), (ky, ox))];
                                     }
                                 }
                             }
                         }
-                        for ox in [x0, x1] {
+                        for &ox in [x0, x1].iter() {
                             if kx == ox {
                                 // smaller vertical
-                                for oy in [y0, y1] {
+                                for &oy in [y0, y1].iter() {
                                     if delta.chmin((oy as i64 - ky as i64).abs()) {
                                         con_pairs = vec![((ky, kx), (oy, kx))];
                                     }
                                 }
                             }
                         }
-                        for oy in [y0, y1] {
-                            for ox in [x0, x1] {
+                        for &oy in [y0, y1].iter() {
+                            for &ox in [x0, x1].iter() {
                                 // adjust y, x
                                 if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
                                     con_pairs = vec![((ky, kx), (oy, kx)), ((oy, kx), (oy, ox))];
@@ -3103,8 +3100,6 @@ impl Solver {
                 if self.state.is_watered(hy, hx) {
                     continue;
                 }
-                drop(hy);
-                drop(hx);
                 let mut que = BinaryHeap::new();
                 let mut dist = HashMap::new();
                 let mut pre = HashMap::new();
@@ -3112,7 +3107,6 @@ impl Solver {
                     que.push(Reverse((0, near_oyi, near_oxi)));
                     dist.insert((near_oyi, near_oxi), 0);
                 }
-                let n = self.state.n();
                 let m = observers.len();
                 let mut watered_y = 0;
                 let mut watered_x = 0;
@@ -3125,14 +3119,12 @@ impl Solver {
                     let x = observers[yi][xi].1;
                     debug_assert!(self.state.is_fixed(y, x));
 
-                    if self.state.is_watered(y, x) {
-                        if watered_dist.chmin(d) {
-                            watered_y = y;
-                            watered_x = x;
-                        }
+                    if self.state.is_watered(y, x) && watered_dist.chmin(d) {
+                        watered_y = y;
+                        watered_x = x;
                     }
 
-                    for (dy, dx) in [(1, 0), (0, 1), (-1, 0), (0, -1)] {
+                    for &(dy, dx) in crate::DIR4.iter() {
                         if let Some(nyi) = yi.move_delta(dy, 0, m - 1) {
                             if let Some(nxi) = xi.move_delta(dx, 0, m - 1) {
                                 let ny = observers[nyi][nxi].0;
