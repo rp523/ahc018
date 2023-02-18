@@ -2913,10 +2913,10 @@ mod state {
             }
             true
         }
-        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) -> bool {
+        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) {
             let power = get_param().power;
             if self.fixed[y][x] {
-                return true;
+                return;
             }
             if force_break {
                 loop {
@@ -2950,7 +2950,6 @@ mod state {
                     }
                 }
             }
-            self.fixed[y][x]
         }
         fn attack(y: usize, x: usize, p: usize) -> bool {
             //return true;
@@ -3006,18 +3005,9 @@ impl Solver {
         }
     }
     fn excavate_observers(state: &mut State, observers: &[Vec<(usize, usize)>]) {
-        let n = state.n();
         for row in observers.iter() {
             for &(y, x) in row.iter() {
-                if state.excavate_point(y, x, false) {
-                    for &(dy, dx) in crate::DIR4.iter() {
-                        if let Some(ny) = y.move_delta(dy, 0, n - 1) {
-                            if let Some(nx) = x.move_delta(dx, 0, n - 1) {
-                                state.excavate_point(ny, nx, false);
-                            }
-                        }
-                    }
-                }
+                state.excavate_point(y, x, false);
             }
         }
     }
