@@ -2918,26 +2918,16 @@ mod state {
             if self.fixed[y][x] {
                 return;
             }
-            if force_break {
-                loop {
-                    self.cum_attack[y][x] += power;
-                    if Self::attack(y, x, power) {
-                        self.fixed[y][x] = true;
-                        self.evaluate[y][x] = Some(self.cum_attack[y][x]);
-                        break;
-                    }
+            loop {
+                self.cum_attack[y][x] += power;
+                if Self::attack(y, x, power) {
+                    self.fixed[y][x] = true;
+                    self.evaluate[y][x] = Some(self.cum_attack[y][x]);
+                    break;
                 }
-            } else {
-                while self.cum_attack[y][x] < get_param().exca_th {
-                    self.cum_attack[y][x] += power;
-                    if Self::attack(y, x, power) {
-                        self.fixed[y][x] = true;
-                        self.evaluate[y][x] = Some(self.cum_attack[y][x]);
-                        break;
-                    }
-                }
-                if !self.fixed[y][x] {
+                if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
                     self.evaluate[y][x] = Some((self.cum_attack[y][x] + HMAX) / 2);
+                    break;
                 }
             }
             if self.fixed[y][x] {
