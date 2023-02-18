@@ -2778,5 +2778,400 @@ use procon_reader::*;
 *************************************************************************************/
 
 fn main() {
-    
+    Solver::new().solve();
+}
+
+mod state {
+    use crate::procon_reader::*;
+    use crate::union_find::UnionFind;
+    use crate::usize_move_delta::MoveDelta;
+    pub struct State {
+        n: usize,
+        fixed: Vec<Vec<bool>>,
+        cum_atk: Vec<Vec<usize>>,
+        uf: UnionFind,
+    }
+    impl State {
+        pub fn new(n: usize, waters: &[(usize, usize)]) -> Self {
+            let mut uf = UnionFind::new(n * n + 1);
+            for &(y, x) in waters.iter() {
+                uf.unite(n * n, y * n + x);
+            }
+            Self {
+                n,
+                fixed: vec![vec![false; n]; n],
+                cum_atk: vec![vec![0; n]; n],
+                uf,
+            }
+        }
+        pub fn is_watered(&mut self, y: usize, x: usize) -> bool {
+            let n = self.n;
+            self.uf.same(n * n, y * n + x)
+        }
+        pub fn is_fixed(&self, y: usize, x: usize) -> bool {
+            self.fixed[y][x]
+        }
+        pub fn n(&self) -> usize {
+            self.n
+        }
+        pub fn delta_line(&self, y: usize, x: usize, ny: usize, nx: usize) -> i64 {
+            let y0 = std::cmp::min(y, ny);
+            let x0 = std::cmp::min(x, nx);
+            let y1 = std::cmp::max(y, ny);
+            let x1 = std::cmp::max(x, nx);
+            let mut valid_sm = 0;
+            let mut valid_norm = 0;
+            let mut empty_norm = 0;
+            if y0 == y1 {
+                // horizontal
+                for x in x0..=x1 {
+                    if self.fixed[y0][x] {
+                        valid_sm += self.cum_atk[y0][x];
+                        valid_norm += 1;
+                    } else {
+                        empty_norm += 1;
+                    }
+                }
+            } else if x0 == x1 {
+                // vertical
+                for y in y0..=y1 {
+                    if self.fixed[y][x0] {
+                        valid_sm += self.cum_atk[y][x0];
+                        valid_norm += 1;
+                    } else {
+                        empty_norm += 1;
+                    }
+                }
+            } else {
+                unreachable!();
+            }
+            (valid_sm * empty_norm) as i64 / valid_norm as i64
+        }
+        pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize) {
+            let y0 = std::cmp::min(y, ny);
+            let x0 = std::cmp::min(x, nx);
+            let y1 = std::cmp::max(y, ny);
+            let x1 = std::cmp::max(x, nx);
+            if y0 == y1 {
+                // horizontal
+                for x in x0..=x1 {
+                    self.excavate_point(y0, x);
+                }
+            } else if x0 == x1 {
+                // horizontal
+                for y in y0..=y1 {
+                    self.excavate_point(y, x0);
+                }
+            } else {
+                unreachable!();
+            }
+        }
+        pub fn is_line_full(&mut self, y: usize, x: usize, ny: usize, nx: usize) -> bool {
+            let y0 = std::cmp::min(y, ny);
+            let x0 = std::cmp::min(x, nx);
+            let y1 = std::cmp::max(y, ny);
+            let x1 = std::cmp::max(x, nx);
+            if y0 == y1 {
+                // horizontal
+                for x in x0..=x1 {
+                    if !self.fixed[y0][x] {
+                        return false;
+                    }
+                }
+            } else if x0 == x1 {
+                // horizontal
+                for y in y0..=y1 {
+                    if !self.fixed[y][x0] {
+                        return false;
+                    }
+                }
+            } else {
+                unreachable!();
+            }
+            true
+        }
+        pub fn excavate_point(&mut self, y: usize, x: usize) {
+            let power = 5000;
+            if !self.fixed[y][x] {
+                let mut attack_cnt = 0;
+                loop {
+                    attack_cnt += power;
+                    if Self::attack(y, x, power) {
+                        break;
+                    }
+                }
+                self.fixed[y][x] = true;
+                self.cum_atk[y][x] = attack_cnt;
+                let n = self.fixed.len();
+                for (dy, dx) in [(0, 1), (1, 0), (-1, 0), (0, -1)] {
+                    if let Some(ny) = y.move_delta(dy, 0, n - 1) {
+                        if let Some(nx) = x.move_delta(dx, 0, n - 1) {
+                            self.uf.unite(y * n + x, ny * n + nx);
+                        }
+                    }
+                }
+            } else {
+                if cfg!(debug_assertions) {
+                    if !self.fixed[y][x] {
+                        debug_assert!(self.cum_atk[y][x] == 0);
+                    }
+                }
+            }
+        }
+        fn attack(y: usize, x: usize, p: usize) -> bool {
+            //return true;
+            println!("{} {} {}", y, x, p);
+            match read::<i64>() {
+                0 => false,
+                1 => true,
+                2 => {
+                    std::process::exit(0);
+                }
+                _ => {
+                    std::process::exit(1);
+                }
+            }
+        }
+    }
+}
+use state::State;
+
+struct Solver {
+    n: usize,
+    waters: Vec<(usize, usize)>,
+    houses: Vec<(usize, usize)>,
+    state: State,
+}
+
+const EFF: i64 = 10;
+const INF: i64 = 1i64 << 60;
+impl Solver {
+    fn new() -> Self {
+        let n = read::<usize>();
+        let w = read::<usize>();
+        let k = read::<usize>();
+        let _c = read::<usize>();
+
+        let mut waters = vec![];
+        for _ in 0..w {
+            waters.push((read::<usize>(), read::<usize>()));
+        }
+        let mut houses = vec![];
+        for _ in 0..k {
+            houses.push((read::<usize>(), read::<usize>()));
+        }
+        let state = State::new(n, &waters);
+        Self {
+            n,
+            waters,
+            houses,
+            state,
+        }
+    }
+    fn excavate_keypoints(state: &mut State, keypoints: &[(usize, usize)]) {
+        let n = state.n();
+        for &(y, x) in keypoints.iter() {
+            state.excavate_point(y, x);
+        }
+    }
+    fn excavate_observers(state: &mut State, observers: &[Vec<(usize, usize)>]) {
+        for row in observers.iter() {
+            for &(y, x) in row.iter() {
+                state.excavate_point(y, x);
+            }
+        }
+    }
+    fn calc_observers(n: usize) -> Vec<Vec<(usize, usize)>> {
+        let mut ys = BTreeSet::new();
+        for y in (0..n).step_by(EFF as usize) {
+            ys.insert(y);
+        }
+        ys.insert(n - 1);
+        let xs = ys.clone();
+        let mut observers = vec![];
+        for &y in ys.iter() {
+            let mut row = vec![];
+            for &x in xs.iter() {
+                row.push((y, x));
+            }
+            observers.push(row);
+        }
+        observers
+    }
+    fn connect_keys_to_near_observers(
+        state: &mut State,
+        keypoints: &[(usize, usize)],
+        observers: &[Vec<(usize, usize)>],
+    ) -> Vec<Vec<(usize, usize)>> {
+
+        let mut near_observers_for_earh_keypoint = vec![vec![]; keypoints.len()];
+
+        let m = observers.len();
+        for (ki, &(ky, kx)) in keypoints.iter().enumerate() {
+            'foundround: for yi in 1..m {
+                for xi in 1..m {
+                    let y1 = observers[yi][xi].0;
+                    let x1 = observers[yi][xi].1;
+                    let y0 = observers[yi - 1][xi - 1].0;
+                    let x0 = observers[yi - 1][xi - 1].1;
+                    if (y0 <= ky) && (ky <= y1) && (x0 <= kx) && (kx <= x1) {
+                        if (ky, kx) == (y0, x0) {
+                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi - 1));
+                            break 'foundround;
+                        }
+                        if (ky, kx) == (y0, x1) {
+                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi));
+                            break 'foundround;
+                        }
+                        if (ky, kx) == (y1, x0) {
+                            near_observers_for_earh_keypoint[ki].push((yi, xi - 1));
+                            break 'foundround;
+                        }
+                        if (ky, kx) == (y1, x1) {
+                            near_observers_for_earh_keypoint[ki].push((yi, xi));
+                            break 'foundround;
+                        }
+                        let mut delta = None;
+                        let mut con_pairs = vec![];
+                        for oy in [y0, y1] {
+                            if ky == oy {
+                                // smaller horizontal
+                                for ox in [x0, x1] {
+                                    if delta.chmin((ox as i64 - kx as i64).abs()) {
+                                        con_pairs = vec![((ky, kx), (ky, ox))];
+                                    }
+                                }
+                            }
+                        }
+                        for ox in [x0, x1] {
+                            if kx == ox {
+                                // smaller vertical
+                                for oy in [y0, y1] {
+                                    if delta.chmin((oy as i64 - ky as i64).abs()) {
+                                        con_pairs = vec![((ky, kx), (oy, kx))];
+                                    }
+                                }
+                            }
+                        }
+                        for oy in [y0, y1] {
+                            for ox in [x0, x1] {
+                                // adjust y, x
+                                if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
+                                    con_pairs = vec![((ky, kx), (oy, kx)), ((oy, kx), (oy, ox))];
+                                }
+                                // adjust x, y
+                                if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
+                                    con_pairs = vec![((ky, kx), (ky, ox)), ((ky, ox), (oy, ox))];
+                                }
+                            }
+                        }
+                        let (coy, cox) = con_pairs.iter().next_back().unwrap().1;
+                        if (coy, cox) == (y0, x0) {
+                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi - 1));
+                        } else if (coy, cox) == (y1, x0) {
+                            near_observers_for_earh_keypoint[ki].push((yi, xi - 1));
+                        } else if (coy, cox) == (y0, x1) {
+                            near_observers_for_earh_keypoint[ki].push((yi - 1, xi));
+                        } else if (coy, cox) == (y1, x1) {
+                            near_observers_for_earh_keypoint[ki].push((yi, xi));
+                        } else {
+                            unreachable!();
+                        }
+                        for &((y, x), (ny, nx)) in &con_pairs {
+                            state.excavate_line(y, x, ny, nx);
+                        }
+                        //
+                        break 'foundround;
+                    }
+                }
+            }
+        }
+        near_observers_for_earh_keypoint
+    }
+    fn connect_house_to_water(
+        &mut self,
+        observers: &[Vec<(usize, usize)>],
+        near_observers_for_earh_house: &[Vec<(usize, usize)>],
+    ) {
+        loop {
+            let mut min_cost = None;
+            let mut min_cost_pre = HashMap::new();
+            let mut min_cost_watered_y = 0;
+            let mut min_cost_watered_x = 0;
+            for (hi, &(hy, hx)) in self.houses.iter().enumerate() {
+                debug_assert!(self.state.is_fixed(hy, hx));
+                if self.state.is_watered(hy, hx) {
+                    continue;
+                }
+                drop(hy);
+                drop(hx);
+                let mut que = BinaryHeap::new();
+                let mut dist = HashMap::new();
+                let mut pre = HashMap::new();
+                for &(near_oyi, near_oxi) in near_observers_for_earh_house[hi].iter() {
+                    que.push(Reverse((0, near_oyi, near_oxi)));
+                    dist.insert((near_oyi, near_oxi), 0);
+                }
+                let n = self.state.n();
+                let m = observers.len();
+                let mut watered_y = 0;
+                let mut watered_x = 0;
+                let mut watered_dist = None;
+                while let Some(Reverse((d, yi, xi))) = que.pop() {
+                    if dist[&(yi, xi)] != d {
+                        continue;
+                    }
+                    let y = observers[yi][xi].0;
+                    let x = observers[yi][xi].1;
+                    debug_assert!(self.state.is_fixed(y, x));
+
+                    if self.state.is_watered(y, x) {
+                        if watered_dist.chmin(d) {
+                            watered_y = y;
+                            watered_x = x;
+                        }
+                    }
+
+                    for (dy, dx) in [(1, 0), (0, 1), (-1, 0), (0, -1)] {
+                        if let Some(nyi) = yi.move_delta(dy, 0, m - 1) {
+                            if let Some(nxi) = xi.move_delta(dx, 0, m - 1) {
+                                let ny = observers[nyi][nxi].0;
+                                let nx = observers[nyi][nxi].1;
+                                debug_assert!(self.state.is_fixed(ny, nx));
+                                let nd = d + self.state.delta_line(y, x, ny, nx);
+                                if dist.entry((nyi, nxi)).or_insert(INF).chmin(nd) {
+                                    pre.insert((ny, nx), (y, x));
+                                    que.push(Reverse((nd, nyi, nxi)));
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if min_cost.chmin(watered_dist.unwrap()) {
+                    min_cost_pre = pre;
+                    min_cost_watered_y = watered_y;
+                    min_cost_watered_x = watered_x;
+                }
+            }
+            
+            let mut to_y = min_cost_watered_y;
+            let mut to_x = min_cost_watered_x;
+            while let Some(&(from_y, from_x)) = min_cost_pre.get(&(to_y, to_x)) {
+                self.state.excavate_line(from_y, from_x, to_y, to_x);
+                to_y = from_y;
+                to_x = from_x;
+            }
+        }
+    }
+    fn solve(&mut self) {
+        let observers = Self::calc_observers(self.n);
+        Self::excavate_observers(&mut self.state, &observers);
+        Self::excavate_keypoints(&mut self.state, &self.waters);
+        Self::excavate_keypoints(&mut self.state, &self.houses);
+        
+        let _ = Self::connect_keys_to_near_observers(&mut self.state, &self.waters, &observers);
+        let near_observers_for_each_house = Self::connect_keys_to_near_observers(&mut self.state, &self.houses, &observers);
+        self.connect_house_to_water(&observers, &near_observers_for_each_house);
+    }
 }
