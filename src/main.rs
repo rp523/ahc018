@@ -230,13 +230,14 @@ use procon_reader::*;
 fn main() {
     let mut args = std::env::args().collect::<Vec<String>>();
     args.remove(0);
-    if args.len() >= 5 {
+    if args.len() >= 6 {
         let param = Param {
             eff: args[0].parse().unwrap(),
             power: args[1].parse().unwrap(),
             exca_th: args[2].parse().unwrap(),
             evalw: args[3].parse().unwrap(),
             fix_rate: args[4].parse().unwrap(),
+            delta_range_inv: args[5].parse().unwrap(),
         };
         set_param(param);
     }
@@ -251,13 +252,15 @@ struct Param {
     exca_th: usize,
     evalw: usize,
     fix_rate: usize,
+    delta_range_inv: i64,
 }
 static mut PARAM: Param = Param {
     eff: 15,
     power: 100,
     exca_th: 100,
     evalw: 8,
-    fix_rate: 128
+    fix_rate: 128,
+    delta_range_inv: 4,
 };
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
@@ -314,6 +317,32 @@ mod state {
             let mut empty_norm = 0;
             let mut delta = 0;
             let fix_rate = get_param().fix_rate;
+            let eff = get_param().eff;
+            let delta_range_inv = get_param().delta_range_inv;
+            let n = self.n;
+            for &(cy, cx) in [(y, x), (ny, nx)].iter() {
+                // horizontal
+                for &(dy_unit, dx_unit) in crate::DIR4.iter() {
+                    for d in 0..(eff / delta_range_inv) {
+                        let dy = dy_unit * d;
+                        let dx = dx_unit * d;
+                        if let Some(y) = cy.move_delta(dy, 0, n - 1) {
+                            if let Some(x) = cx.move_delta(dx, 0, n - 1) {
+                                if self.fixed[y][x] {
+                                    valid_sm += self.cum_attack[y][x] * fix_rate;
+                                    valid_norm += fix_rate;
+                                } else if let Some(weight) = self.evaluate[y][x] {
+                                    delta += weight - self.cum_attack[y][x];
+                                    valid_sm += weight;
+                                    valid_norm += 1;
+                                } else {
+                                    empty_norm += 1;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
