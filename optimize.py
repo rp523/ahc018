@@ -22,7 +22,7 @@ def calc_score(
     score_norm = 0
     score_worst = -1
     worst_case = 0
-    for i in tqdm(range(30)):
+    for i in tqdm(range(3000)):
         cmd = "./tools/target/release/tester target/release/start {} {} {} {}".format(eff, power, exca_th, evalw)
         cmd += " < tools/in/{0:04d}.txt".format(i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
