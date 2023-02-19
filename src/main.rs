@@ -589,7 +589,7 @@ impl Solver {
             let mut to_y = min_cost_watered_y;
             let mut to_x = min_cost_watered_x;
             while let Some(&(from_y, from_x)) = min_cost_pre.get(&(to_y, to_x)) {
-                self.state.excavate_line(from_y, from_x, to_y, to_x);
+                self.state.excavate_line(to_y, to_x, from_y, from_x);
                 to_y = from_y;
                 to_x = from_x;
             }
