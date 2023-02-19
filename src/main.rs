@@ -228,6 +228,18 @@ use procon_reader::*;
 *************************************************************************************/
 
 fn main() {
+    let mut args = std::env::args().collect::<Vec<String>>();
+    args.remove(0);
+    if args.len() >= 4 {
+        let param = Param {
+            eff: args[0].parse().unwrap(),
+            power: args[1].parse().unwrap(),
+            exca_th: args[2].parse().unwrap(),
+            evalw: args[3].parse().unwrap(),
+        };
+        set_param(param);
+    }
+
     Solver::new().solve();
 }
 
@@ -236,11 +248,13 @@ struct Param {
     eff: i64,
     power: usize,
     exca_th: usize,
+    evalw: usize,
 }
 static mut PARAM: Param = Param {
     eff: 10,
     power: 100,
     exca_th: 100,
+    evalw: 8,
 };
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
@@ -407,7 +421,8 @@ mod state {
                     break;
                 }
                 if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
-                    self.evaluate[y][x] = Some((HMAX + self.cum_attack[y][x] * 7) / 8);
+                    let evalw = get_param().evalw;
+                    self.evaluate[y][x] = Some((HMAX + self.cum_attack[y][x] * (evalw - 1)) / evalw);
                     break;
                 }
             }
