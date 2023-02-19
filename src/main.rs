@@ -320,14 +320,16 @@ mod state {
             }
             (valid_sm * empty_norm) as i64 / valid_norm as i64
         }
-        pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize) {
+        pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize, force_all: bool) {
             let n = self.n();
             if y == ny {
                 // horizontal
                 let dx = if x < nx { 1 } else { -1 };
                 let mut px = x;
                 loop {
-                    self.excavate_point(y, px, true);
+                    if self.excavate_point(y, px, true)  && !force_all {
+                        return;
+                    }
                     if px == nx {
                         break;
                     }
@@ -342,7 +344,9 @@ mod state {
                 let dy = if y < ny { 1 } else { -1 };
                 let mut py = y;
                 loop {
-                    self.excavate_point(py, x, true);
+                    if self.excavate_point(py, x, true) && !force_all {
+                        return;
+                    }
                     if py == ny {
                         break;
                     }
@@ -380,10 +384,10 @@ mod state {
             }
             true
         }
-        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) {
+        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) -> bool {
             let power = get_param().power;
             if self.fixed[y][x] {
-                return;
+                return false;
             }
             loop {
                 self.cum_attack[y][x] += power;
@@ -407,6 +411,7 @@ mod state {
                     }
                 }
             }
+            self.fixed[y][x]
         }
         fn attack(y: usize, x: usize, p: usize) -> bool {
             //return true;
@@ -519,8 +524,8 @@ impl Solver {
             if let Some((yi, xi)) = near {
                 near_observers_for_earh_keypoint[ki].push((yi, xi));
                 let (oy, ox) = observers[yi][xi];
-                state.excavate_line(ky, kx, oy, kx);
-                state.excavate_line(oy, kx, oy, ox);
+                state.excavate_line(ky, kx, oy, kx, true);
+                state.excavate_line(oy, kx, oy, ox, true);
             } else {
                 near_observers_for_earh_keypoint[ki].push((ky, kx));
             }
@@ -589,7 +594,7 @@ impl Solver {
             let mut to_y = min_cost_watered_y;
             let mut to_x = min_cost_watered_x;
             while let Some(&(from_y, from_x)) = min_cost_pre.get(&(to_y, to_x)) {
-                self.state.excavate_line(to_y, to_x, from_y, from_x);
+                self.state.excavate_line(to_y, to_x, from_y, from_x, false);
                 to_y = from_y;
                 to_x = from_x;
             }
