@@ -48,50 +48,6 @@ macro_rules! debug {
     };
 }
 
-pub trait Identity {
-    fn identity() -> Self;
-}
-impl Identity for i32 {
-    fn identity() -> Self {
-        1_i32
-    }
-}
-impl Identity for u32 {
-    fn identity() -> Self {
-        1_u32
-    }
-}
-impl Identity for i64 {
-    fn identity() -> Self {
-        1_i64
-    }
-}
-impl Identity for u64 {
-    fn identity() -> Self {
-        1_u64
-    }
-}
-impl Identity for i128 {
-    fn identity() -> Self {
-        1_i128
-    }
-}
-impl Identity for u128 {
-    fn identity() -> Self {
-        1_u128
-    }
-}
-impl Identity for f64 {
-    fn identity() -> Self {
-        1_f64
-    }
-}
-impl Identity for usize {
-    fn identity() -> Self {
-        1_usize
-    }
-}
-
 mod change_min_max {
     pub trait ChangeMinMax<T> {
         fn chmin(&mut self, rhs: T) -> bool;
@@ -365,19 +321,36 @@ mod state {
             (valid_sm * empty_norm) as i64 / valid_norm as i64
         }
         pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize) {
-            let y0 = std::cmp::min(y, ny);
-            let x0 = std::cmp::min(x, nx);
-            let y1 = std::cmp::max(y, ny);
-            let x1 = std::cmp::max(x, nx);
-            if y0 == y1 {
+            let n = self.n();
+            if y == ny {
                 // horizontal
-                for x in x0..=x1 {
-                    self.excavate_point(y0, x, true);
+                let dx = if x < nx { 1 } else { -1 };
+                let mut px = x;
+                loop {
+                    self.excavate_point(y, px, true);
+                    if px == nx {
+                        break;
+                    }
+                    if let Some(pnx) = px.move_delta(dx, 0, n - 1) {
+                        px = pnx;
+                    } else {
+                        break;
+                    }
                 }
-            } else if x0 == x1 {
-                // horizontal
-                for y in y0..=y1 {
-                    self.excavate_point(y, x0, true);
+            } else if x == nx {
+                // vertical
+                let dy = if y < ny { 1 } else { -1 };
+                let mut py = y;
+                loop {
+                    self.excavate_point(py, x, true);
+                    if py == ny {
+                        break;
+                    }
+                    if let Some(pny) = py.move_delta(dy, 0, n - 1) {
+                        py = pny;
+                    } else {
+                        break;
+                    }
                 }
             } else {
                 unreachable!();
@@ -538,9 +511,7 @@ impl Solver {
                         }
                     }
                     // adjust y, x
-                    if delta.chmin(
-                        (oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs(),
-                    ) {
+                    if delta.chmin((oy as i64 - ky as i64).abs() + (ox as i64 - kx as i64).abs()) {
                         near = Some((yi, xi));
                     }
                 }
