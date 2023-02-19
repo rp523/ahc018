@@ -24,7 +24,7 @@ def calc_score(
     score_norm = 0
     score_worst = -1
     worst_case = 0
-    for i in tqdm(range(3000)):
+    for i in range(3000):
         cmd = "./tools/target/release/tester target/release/start {} {} {} {} {}".format(
             eff,
             power,
@@ -60,6 +60,7 @@ def calc_score(
 
 def main():
     study = optuna.create_study()
+    optuna.logging.set_verbosity(optuna.logging.ERROR)
     study.optimize(objective, n_trials=9999999999)
 
 if __name__ == "__main__":
