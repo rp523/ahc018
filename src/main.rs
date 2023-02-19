@@ -397,7 +397,7 @@ mod state {
                     break;
                 }
                 if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
-                    self.evaluate[y][x] = Some((self.cum_attack[y][x] + HMAX) / 2);
+                    self.evaluate[y][x] = Some((HMAX + self.cum_attack[y][x] * 7) / 8);
                     break;
                 }
             }
@@ -406,7 +406,9 @@ mod state {
                 for &(dy, dx) in crate::DIR4.iter() {
                     if let Some(ny) = y.move_delta(dy, 0, n - 1) {
                         if let Some(nx) = x.move_delta(dx, 0, n - 1) {
-                            self.uf.unite(y * n + x, ny * n + nx);
+                            if self.fixed[ny][nx] {
+                                self.uf.unite(y * n + x, ny * n + nx);
+                            }
                         }
                     }
                 }
@@ -542,6 +544,7 @@ impl Solver {
             let mut min_cost_pre = HashMap::new();
             let mut min_cost_watered_y = 0;
             let mut min_cost_watered_x = 0;
+            let mut min_cost_hi = 0;
             for (hi, &(hy, hx)) in self.houses.iter().enumerate() {
                 if self.state.is_watered(hy, hx) {
                     continue;
@@ -588,6 +591,7 @@ impl Solver {
                     min_cost_pre = pre;
                     min_cost_watered_y = watered_y;
                     min_cost_watered_x = watered_x;
+                    min_cost_hi = hi;
                 }
             }
 
