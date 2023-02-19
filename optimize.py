@@ -59,6 +59,9 @@ def calc_score(
     return ave_score
 
 def main():
+    #for eff in range(10, 20 + 1):
+    #    print(calc_score(eff, 100, 100, 8, 128))
+    #return;
     study = optuna.create_study()
     optuna.logging.set_verbosity(optuna.logging.ERROR)
     study.optimize(objective, n_trials=9999999999)

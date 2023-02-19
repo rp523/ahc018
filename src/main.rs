@@ -253,7 +253,7 @@ struct Param {
     fix_rate: usize,
 }
 static mut PARAM: Param = Param {
-    eff: 10,
+    eff: 15,
     power: 100,
     exca_th: 100,
     evalw: 8,
