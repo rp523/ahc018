@@ -6,14 +6,16 @@ def objective(trial):
     eff = trial.suggest_int("eff", 2, 50)
     power = trial.suggest_int("power", 1, 5000)
     exca_th = trial.suggest_int("exca_th", 1, 5000)
-    evalw = trial.suggest_int("eff", 1, 5000)
-    return calc_score(eff, power, exca_th, evalw)
+    evalw = trial.suggest_int("evalw", 1, 5000)
+    fix_rate = trial.suggest_int("fix_rate", 1, 5000)
+    return calc_score(eff, power, exca_th, evalw, fix_rate)
 
 def calc_score(
     eff: int,
     power: int,
     exca_th: int,
     evalw: int,
+    fix_rate: int,
 ):
     subprocess.getoutput("cargo build --release")
     subprocess.getoutput("cd tools && cargo build --release")
@@ -23,7 +25,13 @@ def calc_score(
     score_worst = -1
     worst_case = 0
     for i in tqdm(range(3000)):
-        cmd = "./tools/target/release/tester target/release/start {} {} {} {}".format(eff, power, exca_th, evalw)
+        cmd = "./tools/target/release/tester target/release/start {} {} {} {} {}".format(
+            eff,
+            power,
+            exca_th,
+            evalw,
+            fix_rate,
+        )
         cmd += " < tools/in/{0:04d}.txt".format(i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
         ret = subprocess.getoutput(cmd)
@@ -37,11 +45,12 @@ def calc_score(
     ave_score = score_sum / score_norm
     with open("optuna.csv", "a") as f:
         f.write(
-            "{},{},{},{},{},{},{}\n".format(
+            "{},{},{},{},{},,{},{},{}\n".format(
                 eff,
                 power,
                 exca_th,
                 evalw,
+                fix_rate,
                 ave_score,
                 worst_case,
                 score_worst,

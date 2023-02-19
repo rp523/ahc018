@@ -230,12 +230,13 @@ use procon_reader::*;
 fn main() {
     let mut args = std::env::args().collect::<Vec<String>>();
     args.remove(0);
-    if args.len() >= 4 {
+    if args.len() >= 5 {
         let param = Param {
             eff: args[0].parse().unwrap(),
             power: args[1].parse().unwrap(),
             exca_th: args[2].parse().unwrap(),
             evalw: args[3].parse().unwrap(),
+            fix_rate: args[4].parse().unwrap(),
         };
         set_param(param);
     }
@@ -249,12 +250,14 @@ struct Param {
     power: usize,
     exca_th: usize,
     evalw: usize,
+    fix_rate: usize,
 }
 static mut PARAM: Param = Param {
     eff: 10,
     power: 100,
     exca_th: 100,
     evalw: 8,
+    fix_rate: 128
 };
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
@@ -310,7 +313,7 @@ mod state {
             let mut valid_norm = 0;
             let mut empty_norm = 0;
             let mut delta = 0;
-            let fix_rate = 128;
+            let fix_rate = get_param().fix_rate;
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
