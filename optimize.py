@@ -3,12 +3,13 @@ from tqdm import tqdm
 import optuna
 
 def objective(trial):
-    eff = trial.suggest_int("eff", 2, 50)
-    power = trial.suggest_int("power", 1, 5000)
-    exca_th = trial.suggest_int("exca_th", 1, 5000)
-    evalw = trial.suggest_int("evalw", 1, 5000)
-    fix_rate = trial.suggest_int("fix_rate", 1, 5000)
-    return calc_score(eff, power, exca_th, evalw, fix_rate)
+    eff = trial.suggest_int("eff", 2, 30)
+    power = trial.suggest_int("power", 1, 1000)
+    exca_th = trial.suggest_int("exca_th", 1, 2500)
+    evalw = trial.suggest_int("evalw", 1, 64)
+    fix_rate = trial.suggest_int("fix_rate", 1, 256)
+    delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
+    return calc_score(eff, power, exca_th, evalw, fix_rate, delta_range_inv)
 
 def calc_score(
     eff: int,
@@ -16,6 +17,7 @@ def calc_score(
     exca_th: int,
     evalw: int,
     fix_rate: int,
+    delta_range_inv: int,
 ):
     subprocess.getoutput("cargo build --release")
     subprocess.getoutput("cd tools && cargo build --release")
@@ -25,13 +27,13 @@ def calc_score(
     score_worst = -1
     worst_case = 0
     for i in range(3000):
-        cmd = "./tools/target/release/tester target/release/start {} {} {} {} {}".format(
-            eff,
-            power,
-            exca_th,
-            evalw,
-            fix_rate,
-        )
+        cmd = "./tools/target/release/tester target/release/start"
+        cmd += " {}".format(eff)
+        cmd += " {}".format(power)
+        cmd += " {}".format(exca_th)
+        cmd += " {}".format(evalw)
+        cmd += " {}".format(fix_rate)
+        cmd += " {}".format(delta_range_inv)
         cmd += " < tools/in/{0:04d}.txt".format(i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
         ret = subprocess.getoutput(cmd)
@@ -45,12 +47,13 @@ def calc_score(
     ave_score = score_sum / score_norm
     with open("optuna.csv", "a") as f:
         f.write(
-            "{},{},{},{},{},,{},{},{}\n".format(
+            "{} {} {} {} {} {},,{},{},{}\n".format(
                 eff,
                 power,
                 exca_th,
                 evalw,
                 fix_rate,
+                delta_range_inv,
                 ave_score,
                 worst_case,
                 score_worst,
@@ -61,6 +64,7 @@ def calc_score(
 def main():
     #for eff in range(10, 20 + 1):
     #    print(calc_score(eff, 100, 100, 8, 128))
+    #print(calc_score(15, 100, 100, 8, 128))
     #return;
     study = optuna.create_study()
     optuna.logging.set_verbosity(optuna.logging.ERROR)
