@@ -295,10 +295,16 @@ mod state {
             let mut valid_sm = 0;
             let mut valid_norm = 0;
             let mut empty_norm = 0;
+            let mut delta = 0;
+            let fix_rate = 2;
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
-                    if let Some(weight) = self.evaluate[y0][x] {
+                    if self.fixed[y0][x] {
+                        valid_sm += self.cum_attack[y0][x] * fix_rate;
+                        valid_norm += fix_rate;
+                    } else if let Some(weight) = self.evaluate[y0][x] {
+                        delta += weight - self.cum_attack[y0][x];
                         valid_sm += weight;
                         valid_norm += 1;
                     } else {
@@ -308,7 +314,11 @@ mod state {
             } else if x0 == x1 {
                 // vertical
                 for y in y0..=y1 {
-                    if let Some(weight) = self.evaluate[y][x0] {
+                    if self.fixed[y][x0] {
+                        valid_sm += self.cum_attack[y][x0] * fix_rate;
+                        valid_norm += fix_rate;
+                    } else if let Some(weight) = self.evaluate[y][x0] {
+                        delta += weight - self.cum_attack[y][x0];
                         valid_sm += weight;
                         valid_norm += 1;
                     } else {
@@ -318,7 +328,7 @@ mod state {
             } else {
                 unreachable!();
             }
-            (valid_sm * empty_norm) as i64 / valid_norm as i64
+            delta as i64 + (valid_sm * empty_norm) as i64 / valid_norm as i64
         }
         pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize, force_all: bool) {
             let n = self.n();
@@ -327,7 +337,7 @@ mod state {
                 let dx = if x < nx { 1 } else { -1 };
                 let mut px = x;
                 loop {
-                    if self.excavate_point(y, px, true)  && !force_all {
+                    if self.excavate_point(y, px, force_all) && !force_all {
                         return;
                     }
                     if px == nx {
@@ -344,7 +354,7 @@ mod state {
                 let dy = if y < ny { 1 } else { -1 };
                 let mut py = y;
                 loop {
-                    if self.excavate_point(py, x, true) && !force_all {
+                    if self.excavate_point(py, x, force_all) && !force_all {
                         return;
                     }
                     if py == ny {
@@ -389,15 +399,24 @@ mod state {
             if self.fixed[y][x] {
                 return false;
             }
+            let mut additional = 0;
             loop {
                 self.cum_attack[y][x] += power;
+                additional += power;
                 if Self::attack(y, x, power) {
                     self.fixed[y][x] = true;
                     self.evaluate[y][x] = Some(self.cum_attack[y][x]);
                     break;
                 }
-                if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
-                    self.evaluate[y][x] = Some((HMAX + self.cum_attack[y][x] * 7) / 8);
+                if !force_break && (additional >= get_param().exca_th) {
+                    let mut rate = (self.cum_attack[y][x] as f64 / HMAX as f64).sqrt();
+                    if rate < 0.1 {
+                        rate = 0.1;
+                    }
+                    if rate > 0.9 {
+                        rate = 0.9;
+                    }
+                    self.evaluate[y][x] = Some(((HMAX as f64 * rate + self.cum_attack[y][x] as f64 * (1.0f64 - rate))) as usize);
                     break;
                 }
             }
@@ -586,7 +605,7 @@ impl Solver {
                         }
                     }
                 }
-
+                
                 if min_cost.chmin(watered_dist.unwrap()) {
                     min_cost_pre = pre;
                     min_cost_watered_y = watered_y;
