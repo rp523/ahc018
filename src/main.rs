@@ -295,10 +295,16 @@ mod state {
             let mut valid_sm = 0;
             let mut valid_norm = 0;
             let mut empty_norm = 0;
+            let mut delta = 0;
+            let fix_rate = 128;
             if y0 == y1 {
                 // horizontal
                 for x in x0..=x1 {
-                    if let Some(weight) = self.evaluate[y0][x] {
+                    if self.fixed[y0][x] {
+                        valid_sm += self.cum_attack[y0][x] * fix_rate;
+                        valid_norm += fix_rate;
+                    } else if let Some(weight) = self.evaluate[y0][x] {
+                        delta += weight - self.cum_attack[y0][x];
                         valid_sm += weight;
                         valid_norm += 1;
                     } else {
@@ -308,7 +314,11 @@ mod state {
             } else if x0 == x1 {
                 // vertical
                 for y in y0..=y1 {
-                    if let Some(weight) = self.evaluate[y][x0] {
+                    if self.fixed[y][x0] {
+                        valid_sm += self.cum_attack[y][x0] * fix_rate;
+                        valid_norm += fix_rate;
+                    } else if let Some(weight) = self.evaluate[y][x0] {
+                        delta += weight - self.cum_attack[y][x0];
                         valid_sm += weight;
                         valid_norm += 1;
                     } else {
@@ -318,7 +328,7 @@ mod state {
             } else {
                 unreachable!();
             }
-            (valid_sm * empty_norm) as i64 / valid_norm as i64
+            delta as i64 + (valid_sm * empty_norm) as i64 / valid_norm as i64
         }
         pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize, force_all: bool) {
             let n = self.n();
