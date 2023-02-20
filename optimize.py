@@ -26,7 +26,10 @@ def calc_score(
     score_norm = 0
     score_worst = -1
     worst_case = 0
-    for i in range(3000):
+    for _cnt in (range(0, 8 * 1000)):
+        _cp = _cnt % 8
+        i = _cnt // 8
+        c = 1 << _cp
         cmd = "./tools/target/release/tester target/release/start"
         cmd += " {}".format(eff)
         cmd += " {}".format(power)
@@ -34,7 +37,7 @@ def calc_score(
         cmd += " {}".format(evalw)
         cmd += " {}".format(fix_rate)
         cmd += " {}".format(delta_range_inv)
-        cmd += " < tools/in/{0:04d}.txt".format(i)
+        cmd += " < tools/in{0}/{0:04d}.txt".format(c, i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
         ret = subprocess.getoutput(cmd)
         keywd = "Total Cost = "
@@ -64,8 +67,7 @@ def calc_score(
 def main():
     #for eff in range(10, 20 + 1):
     #    print(calc_score(eff, 100, 100, 8, 128))
-    #print(calc_score(15, 100, 100, 8, 128))
-    #return;
+    #print(calc_score(14, 68, 43, 9, 241, 18)); return
     study = optuna.create_study()
     optuna.logging.set_verbosity(optuna.logging.ERROR)
     study.optimize(objective, n_trials=9999999999)
