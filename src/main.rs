@@ -255,12 +255,12 @@ struct Param {
     delta_range_inv: i64,
 }
 static mut PARAM: Param = Param {
-    eff: 15,
-    power: 100,
-    exca_th: 100,
-    evalw: 8,
-    fix_rate: 128,
-    delta_range_inv: 4,
+    eff: 14,
+    power: 68,
+    exca_th: 43,
+    evalw: 9,
+    fix_rate: 241,
+    delta_range_inv: 18,
 };
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
