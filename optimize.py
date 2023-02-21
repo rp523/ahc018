@@ -44,7 +44,7 @@ def calc_score(
     ave_score = score_sum / score_norm
     with open("optuna{}.csv".format(c), "a") as f:
         f.write(
-            "{} {} {} {} {} {},,{},{},{}\n".format(
+            "    Param {{eff: {}, power: {}, exca_th: {}, evalw: {}, fix_rate: {}, delta_range_inv: {}, }},,{},{},{}\n".format(
                 eff,
                 power,
                 exca_th,
