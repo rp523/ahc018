@@ -16,8 +16,8 @@ def calc_score(
     delta_range_inv: int,
 ):
     c = 1 << cb
-    subprocess.getoutput("cargo build --release")
-    subprocess.getoutput("cd tools && cargo build --release")
+#    subprocess.getoutput("cargo build --release")
+#    subprocess.getoutput("cd tools && cargo build --release")
 
     score_sum = 0
     score_norm = 0
