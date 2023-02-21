@@ -143,7 +143,7 @@ def optimize(cb):
 
 def main():
     futures = []
-    with ThreadPoolExecutor(max_workers = 4, thread_name_prefix="thread") as pool:
+    with ThreadPoolExecutor(max_workers = 8, thread_name_prefix="thread") as pool:
         for cb in range(8):
             future = pool.submit(optimize, cb)
             futures.append(future)
