@@ -31,7 +31,7 @@ def calc_score(
         cmd += " {}".format(evalw)
         cmd += " {}".format(fix_rate)
         cmd += " {}".format(delta_range_inv)
-        cmd += " < tools/in{0}/{0:04d}.txt".format(c, i)
+        cmd += " < tools/in{}".format(c) + "/{0:04d}.txt".format(i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
         ret = subprocess.getoutput(cmd)
         keywd = "Total Cost = "
@@ -143,7 +143,7 @@ def optimize(cb):
 
 def main():
     futures = []
-    with ThreadPoolExecutor(max_workers = 8, thread_name_prefix="thread") as pool:
+    with ThreadPoolExecutor(max_workers = 4, thread_name_prefix="thread") as pool:
         for cb in range(8):
             future = pool.submit(optimize, cb)
             futures.append(future)

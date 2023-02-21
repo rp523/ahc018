@@ -228,20 +228,6 @@ use procon_reader::*;
 *************************************************************************************/
 
 fn main() {
-    let mut args = std::env::args().collect::<Vec<String>>();
-    args.remove(0);
-    if args.len() >= 6 {
-        let param = Param {
-            eff: args[0].parse().unwrap(),
-            power: args[1].parse().unwrap(),
-            exca_th: args[2].parse().unwrap(),
-            evalw: args[3].parse().unwrap(),
-            fix_rate: args[4].parse().unwrap(),
-            delta_range_inv: args[5].parse().unwrap(),
-        };
-        set_param(param);
-    }
-
     Solver::new().solve();
 }
 
@@ -262,6 +248,17 @@ static mut PARAM: Param = Param {
     fix_rate: 241,
     delta_range_inv: 18,
 };
+const PARAMS: [Param; 8] = [
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+];
+
 fn get_param() -> &'static Param {
     unsafe { &PARAM }
 }
@@ -285,9 +282,10 @@ mod state {
         cum_attack: Vec<Vec<usize>>,
         evaluate: Vec<Vec<Option<usize>>>,
         uf: UnionFind,
+        c: usize,
     }
     impl State {
-        pub fn new(n: usize, waters: &[(usize, usize)]) -> Self {
+        pub fn new(n: usize, c: usize, waters: &[(usize, usize)]) -> Self {
             let mut uf = UnionFind::new(n * n + 1);
             for &(y, x) in waters.iter() {
                 uf.unite(n * n, y * n + x);
@@ -298,6 +296,7 @@ mod state {
                 cum_attack: vec![vec![0; n]; n],
                 evaluate: vec![vec![None; n]; n],
                 uf,
+                c,
             }
         }
         pub fn is_watered(&mut self, y: usize, x: usize) -> bool {
@@ -320,6 +319,10 @@ mod state {
             let eff = get_param().eff;
             let delta_range_inv = get_param().delta_range_inv;
             let n = self.n;
+            let cost = |atk: usize| -> usize {
+                let cnt = (atk + get_param().power - 1) / get_param().power;
+                cnt * (get_param().power + self.c)
+            };
             for &(cy, cx) in [(y, x), (ny, nx)].iter() {
                 // horizontal
                 for &(dy_unit, dx_unit) in crate::DIR4.iter() {
@@ -329,11 +332,11 @@ mod state {
                         if let Some(y) = cy.move_delta(dy, 0, n - 1) {
                             if let Some(x) = cx.move_delta(dx, 0, n - 1) {
                                 if self.fixed[y][x] {
-                                    valid_sm += self.cum_attack[y][x] * fix_rate;
+                                    valid_sm += cost(self.cum_attack[y][x]) * fix_rate;
                                     valid_norm += fix_rate;
                                 } else if let Some(weight) = self.evaluate[y][x] {
-                                    delta += weight - self.cum_attack[y][x];
-                                    valid_sm += weight;
+                                    delta += cost(weight - self.cum_attack[y][x]);
+                                    valid_sm += cost(weight);
                                     valid_norm += 1;
                                 } else {
                                     empty_norm += 1;
@@ -347,11 +350,11 @@ mod state {
                 // horizontal
                 for x in x0..=x1 {
                     if self.fixed[y0][x] {
-                        valid_sm += self.cum_attack[y0][x] * fix_rate;
+                        valid_sm += cost(self.cum_attack[y0][x]) * fix_rate;
                         valid_norm += fix_rate;
                     } else if let Some(weight) = self.evaluate[y0][x] {
-                        delta += weight - self.cum_attack[y0][x];
-                        valid_sm += weight;
+                        delta += cost(weight - self.cum_attack[y0][x]);
+                        valid_sm += cost(weight);
                         valid_norm += 1;
                     } else {
                         empty_norm += 1;
@@ -361,11 +364,11 @@ mod state {
                 // vertical
                 for y in y0..=y1 {
                     if self.fixed[y][x0] {
-                        valid_sm += self.cum_attack[y][x0] * fix_rate;
+                        valid_sm += cost(self.cum_attack[y][x0]) * fix_rate;
                         valid_norm += fix_rate;
                     } else if let Some(weight) = self.evaluate[y][x0] {
-                        delta += weight - self.cum_attack[y][x0];
-                        valid_sm += weight;
+                        delta += cost(weight - self.cum_attack[y][x0]);
+                        valid_sm += cost(weight);
                         valid_norm += 1;
                     } else {
                         empty_norm += 1;
@@ -383,7 +386,7 @@ mod state {
                 let dx = if x < nx { 1 } else { -1 };
                 let mut px = x;
                 loop {
-                    if self.excavate_point(y, px, true)  && !force_all {
+                    if self.excavate_point(y, px, true) && !force_all {
                         return;
                     }
                     if px == nx {
@@ -441,7 +444,12 @@ mod state {
             true
         }
         pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) -> bool {
-            let power = get_param().power;
+            //            let power = get_param().power;
+            let power = if let Some(power) = self.evaluate[y][x] {
+                std::cmp::max(power, get_param().power)
+            } else {
+                get_param().power
+            };
             if self.fixed[y][x] {
                 return false;
             }
@@ -454,7 +462,8 @@ mod state {
                 }
                 if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
                     let evalw = get_param().evalw;
-                    self.evaluate[y][x] = Some((HMAX + self.cum_attack[y][x] * (evalw - 1)) / evalw);
+                    self.evaluate[y][x] =
+                        Some((HMAX + self.cum_attack[y][x] * (evalw - 1)) / evalw);
                     break;
                 }
             }
@@ -502,7 +511,25 @@ impl Solver {
         let n = read::<usize>();
         let w = read::<usize>();
         let k = read::<usize>();
-        let _c = read::<usize>();
+        let c = read::<usize>();
+
+        for cs in 0..8 {
+            if (1 << cs) == c {
+                set_param(PARAMS[cs]);
+            }
+        }
+        let mut args = std::env::args().collect::<Vec<String>>();
+        args.remove(0);
+        if args.len() >= 6 {
+            set_param( Param {
+                eff: args[0].parse().unwrap(),
+                power: args[1].parse().unwrap(),
+                exca_th: args[2].parse().unwrap(),
+                evalw: args[3].parse().unwrap(),
+                fix_rate: args[4].parse().unwrap(),
+                delta_range_inv: args[5].parse().unwrap(),
+            });
+        }
 
         let mut waters = vec![];
         for _ in 0..w {
@@ -512,7 +539,7 @@ impl Solver {
         for _ in 0..k {
             houses.push((read::<usize>(), read::<usize>()));
         }
-        let state = State::new(n, &waters);
+        let state = State::new(n, c, &waters);
         Self {
             n,
             waters,
