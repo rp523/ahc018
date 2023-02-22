@@ -234,29 +234,39 @@ fn main() {
 #[derive(Clone, Copy)]
 struct Param {
     eff: i64,
-    power: usize,
-    exca_th: usize,
+    key_power: usize,
+    key_exca_th: usize,
+    observe_power: usize,
+    observe_exca_th: usize,
+    connect_power: usize,
+    connect_exca_th: usize,
     evalw: usize,
     fix_rate: usize,
     delta_range_inv: i64,
+    delta_cost_w: usize,
 }
 static mut PARAM: Param = Param {
     eff: 14,
-    power: 68,
-    exca_th: 43,
+    key_power: 68,
+    key_exca_th: 43,
+    observe_power: 68,
+    observe_exca_th: 43,
+    connect_power: 68,
+    connect_exca_th: 43,
     evalw: 9,
     fix_rate: 241,
     delta_range_inv: 18,
+    delta_cost_w: 1,
 };
 const PARAMS: [Param; 8] = [
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
-    Param {eff: 14, power: 68, exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, },
+    Param {eff: 25,	 key_power: 399,	 key_exca_th: 2109,	 observe_power: 451,	 observe_exca_th: 1721,	 connect_power: 85,	 connect_exca_th: 1224,	 evalw: 18,	 fix_rate: 171,	 delta_range_inv: 5,	 delta_cost_w: 29,	 },
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
+    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1,},
 ];
 
 fn get_param() -> &'static Param {
@@ -320,8 +330,10 @@ mod state {
             let delta_range_inv = get_param().delta_range_inv;
             let n = self.n;
             let cost = |atk: usize| -> usize {
-                let cnt = (atk + get_param().power - 1) / get_param().power;
-                cnt * (get_param().power + self.c)
+                let cnt = (atk + get_param().connect_power - 1) / get_param().connect_power;
+                let costed_atk = cnt * (get_param().connect_power + self.c);
+                let w = get_param().delta_cost_w;
+                (atk * w + costed_atk * (w - 1)) / w
             };
             for &(cy, cx) in [(y, x), (ny, nx)].iter() {
                 // horizontal
@@ -379,14 +391,14 @@ mod state {
             }
             delta as i64 + (valid_sm * empty_norm) as i64 / valid_norm as i64
         }
-        pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize, force_all: bool) {
+        pub fn excavate_line(&mut self, y: usize, x: usize, ny: usize, nx: usize, force_all: bool, given_power: usize, given_exca_th: usize) {
             let n = self.n();
             if y == ny {
                 // horizontal
                 let dx = if x < nx { 1 } else { -1 };
                 let mut px = x;
                 loop {
-                    if self.excavate_point(y, px, true) && !force_all {
+                    if self.excavate_point(y, px, true, given_power, given_exca_th) && !force_all {
                         return;
                     }
                     if px == nx {
@@ -403,7 +415,7 @@ mod state {
                 let dy = if y < ny { 1 } else { -1 };
                 let mut py = y;
                 loop {
-                    if self.excavate_point(py, x, true) && !force_all {
+                    if self.excavate_point(py, x, true, given_power, given_exca_th) && !force_all {
                         return;
                     }
                     if py == ny {
@@ -443,12 +455,12 @@ mod state {
             }
             true
         }
-        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool) -> bool {
+        pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool, given_power: usize, given_exca_th: usize) -> bool {
             //            let power = get_param().power;
-            let power = if let Some(power) = self.evaluate[y][x] {
-                std::cmp::max(power, get_param().power)
+            let power = if let Some(eval) = self.evaluate[y][x] {
+                std::cmp::max(eval, given_power)
             } else {
-                get_param().power
+                given_power
             };
             if self.fixed[y][x] {
                 return false;
@@ -460,7 +472,7 @@ mod state {
                     self.evaluate[y][x] = Some(self.cum_attack[y][x]);
                     break;
                 }
-                if !force_break && (self.cum_attack[y][x] >= get_param().exca_th) {
+                if !force_break && (self.cum_attack[y][x] >= given_exca_th) {
                     let evalw = get_param().evalw;
                     self.evaluate[y][x] =
                         Some((HMAX + self.cum_attack[y][x] * (evalw - 1)) / evalw);
@@ -520,14 +532,19 @@ impl Solver {
         }
         let mut args = std::env::args().collect::<Vec<String>>();
         args.remove(0);
-        if args.len() >= 6 {
+        if args.len() >= 11 {
             set_param( Param {
                 eff: args[0].parse().unwrap(),
-                power: args[1].parse().unwrap(),
-                exca_th: args[2].parse().unwrap(),
-                evalw: args[3].parse().unwrap(),
-                fix_rate: args[4].parse().unwrap(),
-                delta_range_inv: args[5].parse().unwrap(),
+                key_power: args[1].parse().unwrap(),
+                key_exca_th: args[2].parse().unwrap(),
+                observe_power: args[3].parse().unwrap(),
+                observe_exca_th: args[4].parse().unwrap(),
+                connect_power: args[5].parse().unwrap(),
+                connect_exca_th: args[6].parse().unwrap(),
+                evalw: args[7].parse().unwrap(),
+                fix_rate: args[8].parse().unwrap(),
+                delta_range_inv: args[9].parse().unwrap(),
+                delta_cost_w: args[10].parse().unwrap(),
             });
         }
 
@@ -549,13 +566,13 @@ impl Solver {
     }
     fn excavate_keypoints(state: &mut State, keypoints: &[(usize, usize)]) {
         for &(y, x) in keypoints.iter() {
-            state.excavate_point(y, x, true);
+            state.excavate_point(y, x, true, get_param().key_power, get_param().key_exca_th);
         }
     }
     fn excavate_observers(state: &mut State, observers: &[Vec<(usize, usize)>]) {
         for row in observers.iter() {
             for &(y, x) in row.iter() {
-                state.excavate_point(y, x, false);
+                state.excavate_point(y, x, false, get_param().observe_power, get_param().observe_exca_th);
             }
         }
     }
@@ -610,8 +627,8 @@ impl Solver {
             if let Some((yi, xi)) = near {
                 near_observers_for_earh_keypoint[ki].push((yi, xi));
                 let (oy, ox) = observers[yi][xi];
-                state.excavate_line(ky, kx, oy, kx, true);
-                state.excavate_line(oy, kx, oy, ox, true);
+                state.excavate_line(ky, kx, oy, kx, true, get_param().key_power, get_param().key_exca_th);
+                state.excavate_line(oy, kx, oy, ox, true, get_param().key_power, get_param().key_exca_th);
             } else {
                 near_observers_for_earh_keypoint[ki].push((ky, kx));
             }
@@ -682,7 +699,7 @@ impl Solver {
             let mut to_y = min_cost_watered_y;
             let mut to_x = min_cost_watered_x;
             while let Some(&(from_y, from_x)) = min_cost_pre.get(&(to_y, to_x)) {
-                self.state.excavate_line(to_y, to_x, from_y, from_x, false);
+                self.state.excavate_line(to_y, to_x, from_y, from_x, false, get_param().connect_power, get_param().connect_exca_th);
                 to_y = from_y;
                 to_x = from_x;
             }
