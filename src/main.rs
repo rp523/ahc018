@@ -261,14 +261,14 @@ static mut PARAM: Param = Param {
     atk_eval_rate: 0
 };
 const PARAMS: [Param; 8] = [
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
-    Param {eff: 14, key_power: 68, key_exca_th: 43, observe_power: 68, observe_exca_th: 43, connect_power: 68, connect_exca_th: 43, evalw: 9, fix_rate: 241, delta_range_inv: 18, delta_cost_w: 1, atk_eval_rate: 8},
+    Param {eff: 13,  key_power: 3,  key_exca_th: 2063,  observe_power: 95,  observe_exca_th: 16,  connect_power: 30,  connect_exca_th: 268,  evalw: 8,  fix_rate: 83,  delta_range_inv: 5,  delta_cost_w: 18,  atk_eval_rate: 1,  },
+    Param {eff: 17,  key_power: 41,  key_exca_th: 1120,  observe_power: 20,  observe_exca_th: 98,  connect_power: 34,  connect_exca_th: 229,  evalw: 29,  fix_rate: 53,  delta_range_inv: 11,  delta_cost_w: 28,  atk_eval_rate: 30,  },
+    Param {eff: 15,  key_power: 120,  key_exca_th: 289,  observe_power: 104,  observe_exca_th: 163,  connect_power: 40,  connect_exca_th: 385,  evalw: 15,  fix_rate: 33,  delta_range_inv: 11,  delta_cost_w: 22,  atk_eval_rate: 14,  }, 
+    Param {eff: 12,  key_power: 97,  key_exca_th: 5,  observe_power: 141,  observe_exca_th: 11,  connect_power: 66,  connect_exca_th: 145,  evalw: 39,  fix_rate: 71,  delta_range_inv: 7,  delta_cost_w: 28,  atk_eval_rate: 6,  }, 
+    Param {eff: 13,  key_power: 33,  key_exca_th: 1334,  observe_power: 108,  observe_exca_th: 77,  connect_power: 99,  connect_exca_th: 293,  evalw: 6,  fix_rate: 239,  delta_range_inv: 15,  delta_cost_w: 15,  atk_eval_rate: 18,  }, 
+    Param {eff: 12,  key_power: 293,  key_exca_th: 1411,  observe_power: 46,  observe_exca_th: 30,  connect_power: 61,  connect_exca_th: 410,  evalw: 6,  fix_rate: 4,  delta_range_inv: 20,  delta_cost_w: 12,  atk_eval_rate: 4,  }, 
+    Param {eff: 18,  key_power: 146,  key_exca_th: 513,  observe_power: 84,  observe_exca_th: 41,  connect_power: 121,  connect_exca_th: 25,  evalw: 6,  fix_rate: 55,  delta_range_inv: 25,  delta_cost_w: 29,  atk_eval_rate: 19,  }, 
+    Param {eff: 14,  key_power: 96,  key_exca_th: 591,  observe_power: 83,  observe_exca_th: 117,  connect_power: 88,  connect_exca_th: 105,  evalw: 13,  fix_rate: 5,  delta_range_inv: 5,  delta_cost_w: 9,  atk_eval_rate: 3,  }, 
 ];
 
 fn get_param() -> &'static Param {
@@ -485,6 +485,7 @@ mod state {
             if self.fixed[y][x] {
                 return false;
             }
+//            let power = std::cmp::min(power, HMAX - self.cum_attack[y][x]);
             loop {
                 self.cum_attack[y][x] += power;
                 if Self::attack(y, x, power) {
@@ -500,7 +501,6 @@ mod state {
                 }
             }
             if self.fixed[y][x] {
-                let n = self.fixed.len();
                 for &(dy, dx) in crate::DIR4.iter() {
                     if let Some(ny) = y.move_delta(dy, 0, n - 1) {
                         if let Some(nx) = x.move_delta(dx, 0, n - 1) {
