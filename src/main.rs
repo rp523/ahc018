@@ -242,33 +242,33 @@ struct Param {
     connect_exca_th: usize,
     evalw: usize,
     fix_rate: usize,
-    delta_range_inv: i64,
+    delta_range: i64,
     delta_cost_w: usize,
     atk_eval_rate: usize,
 }
 static mut PARAM: Param = Param {
-    eff: 14,
-    key_power: 68,
-    key_exca_th: 43,
-    observe_power: 68,
-    observe_exca_th: 43,
-    connect_power: 68,
-    connect_exca_th: 43,
-    evalw: 9,
-    fix_rate: 241,
-    delta_range_inv: 18,
-    delta_cost_w: 1,
+    eff: 0,
+    key_power: 0,
+    key_exca_th: 0,
+    observe_power: 0,
+    observe_exca_th: 0,
+    connect_power: 0,
+    connect_exca_th: 0,
+    evalw: 0,
+    fix_rate: 0,
+    delta_range: 0,
+    delta_cost_w: 0,
     atk_eval_rate: 0
 };
 const PARAMS: [Param; 8] = [
-    Param {eff: 13,  key_power: 3,  key_exca_th: 2063,  observe_power: 95,  observe_exca_th: 16,  connect_power: 30,  connect_exca_th: 268,  evalw: 8,  fix_rate: 83,  delta_range_inv: 5,  delta_cost_w: 18,  atk_eval_rate: 1,  },
-    Param {eff: 17,  key_power: 41,  key_exca_th: 1120,  observe_power: 20,  observe_exca_th: 98,  connect_power: 34,  connect_exca_th: 229,  evalw: 29,  fix_rate: 53,  delta_range_inv: 11,  delta_cost_w: 28,  atk_eval_rate: 30,  },
-    Param {eff: 15,  key_power: 120,  key_exca_th: 289,  observe_power: 104,  observe_exca_th: 163,  connect_power: 40,  connect_exca_th: 385,  evalw: 15,  fix_rate: 33,  delta_range_inv: 11,  delta_cost_w: 22,  atk_eval_rate: 14,  }, 
-    Param {eff: 12,  key_power: 97,  key_exca_th: 5,  observe_power: 141,  observe_exca_th: 11,  connect_power: 66,  connect_exca_th: 145,  evalw: 39,  fix_rate: 71,  delta_range_inv: 7,  delta_cost_w: 28,  atk_eval_rate: 6,  }, 
-    Param {eff: 13,  key_power: 33,  key_exca_th: 1334,  observe_power: 108,  observe_exca_th: 77,  connect_power: 99,  connect_exca_th: 293,  evalw: 6,  fix_rate: 239,  delta_range_inv: 15,  delta_cost_w: 15,  atk_eval_rate: 18,  }, 
-    Param {eff: 12,  key_power: 293,  key_exca_th: 1411,  observe_power: 46,  observe_exca_th: 30,  connect_power: 61,  connect_exca_th: 410,  evalw: 6,  fix_rate: 4,  delta_range_inv: 20,  delta_cost_w: 12,  atk_eval_rate: 4,  }, 
-    Param {eff: 18,  key_power: 146,  key_exca_th: 513,  observe_power: 84,  observe_exca_th: 41,  connect_power: 121,  connect_exca_th: 25,  evalw: 6,  fix_rate: 55,  delta_range_inv: 25,  delta_cost_w: 29,  atk_eval_rate: 19,  }, 
-    Param {eff: 14,  key_power: 96,  key_exca_th: 591,  observe_power: 83,  observe_exca_th: 117,  connect_power: 88,  connect_exca_th: 105,  evalw: 13,  fix_rate: 5,  delta_range_inv: 5,  delta_cost_w: 9,  atk_eval_rate: 3,  }, 
+    Param {eff: 13,  key_power: 3,  key_exca_th: 2063,  observe_power: 95,  observe_exca_th: 16,  connect_power: 30,  connect_exca_th: 268,  evalw: 8,  fix_rate: 83,  delta_range: 5,  delta_cost_w: 18,  atk_eval_rate: 1,  },
+    Param {eff: 17,  key_power: 41,  key_exca_th: 1120,  observe_power: 20,  observe_exca_th: 98,  connect_power: 34,  connect_exca_th: 229,  evalw: 29,  fix_rate: 53,  delta_range: 11,  delta_cost_w: 28,  atk_eval_rate: 30,  },
+    Param {eff: 15,  key_power: 120,  key_exca_th: 289,  observe_power: 104,  observe_exca_th: 163,  connect_power: 40,  connect_exca_th: 385,  evalw: 15,  fix_rate: 33,  delta_range: 11,  delta_cost_w: 22,  atk_eval_rate: 14,  }, 
+    Param {eff: 12,  key_power: 97,  key_exca_th: 5,  observe_power: 141,  observe_exca_th: 11,  connect_power: 66,  connect_exca_th: 145,  evalw: 39,  fix_rate: 71,  delta_range: 7,  delta_cost_w: 28,  atk_eval_rate: 6,  }, 
+    Param {eff: 13,  key_power: 33,  key_exca_th: 1334,  observe_power: 108,  observe_exca_th: 77,  connect_power: 99,  connect_exca_th: 293,  evalw: 6,  fix_rate: 239,  delta_range: 15,  delta_cost_w: 15,  atk_eval_rate: 18,  }, 
+    Param {eff: 12,  key_power: 293,  key_exca_th: 1411,  observe_power: 46,  observe_exca_th: 30,  connect_power: 61,  connect_exca_th: 410,  evalw: 6,  fix_rate: 4,  delta_range: 20,  delta_cost_w: 12,  atk_eval_rate: 4,  }, 
+    Param {eff: 18,  key_power: 146,  key_exca_th: 513,  observe_power: 84,  observe_exca_th: 41,  connect_power: 121,  connect_exca_th: 25,  evalw: 6,  fix_rate: 55,  delta_range: 25,  delta_cost_w: 29,  atk_eval_rate: 19,  }, 
+    Param {eff: 14,  key_power: 96,  key_exca_th: 591,  observe_power: 83,  observe_exca_th: 117,  connect_power: 88,  connect_exca_th: 105,  evalw: 13,  fix_rate: 5,  delta_range: 5,  delta_cost_w: 9,  atk_eval_rate: 3,  }, 
 ];
 
 fn get_param() -> &'static Param {
@@ -345,7 +345,7 @@ mod state {
             let mut delta = 0;
             let fix_rate = get_param().fix_rate;
             let eff = get_param().eff;
-            let delta_range_inv = get_param().delta_range_inv;
+            let delta_range = get_param().delta_range;
             let n = self.n;
             let cost = |atk: usize| -> usize {
                 let cnt = (atk + given_power - 1) / given_power;
@@ -356,7 +356,7 @@ mod state {
             for &(cy, cx) in [(y, x), (ny, nx)].iter() {
                 // horizontal
                 for &(dy_unit, dx_unit) in crate::DIR4.iter() {
-                    for d in 0..(eff / delta_range_inv) {
+                    for d in 0..delta_range {
                         let dy = dy_unit * d;
                         let dx = dx_unit * d;
                         if let Some(y) = cy.move_delta(dy, 0, n - 1) {
@@ -475,6 +475,7 @@ mod state {
         }
         pub fn excavate_point(&mut self, y: usize, x: usize, force_break: bool, given_power: usize, given_exca_th: usize) -> bool {
             //            let power = get_param().power;
+            let n = self.fixed.len();
             let power = if let Some(eval) = self.evaluate[y][x] {
                 let eval_power = std::cmp::max(eval, given_power);
                 let w = get_param().atk_eval_rate;
@@ -485,7 +486,7 @@ mod state {
             if self.fixed[y][x] {
                 return false;
             }
-//            let power = std::cmp::min(power, HMAX - self.cum_attack[y][x]);
+            let power = std::cmp::min(power, HMAX - self.cum_attack[y][x]);
             loop {
                 self.cum_attack[y][x] += power;
                 if Self::attack(y, x, power) {
@@ -568,7 +569,7 @@ impl Solver {
                 connect_exca_th: args[6].parse().unwrap(),
                 evalw: args[7].parse().unwrap(),
                 fix_rate: args[8].parse().unwrap(),
-                delta_range_inv: args[9].parse().unwrap(),
+                delta_range: args[9].parse().unwrap(),
                 delta_cost_w: args[10].parse().unwrap(),
                 atk_eval_rate: args[11].parse().unwrap(),
             });
