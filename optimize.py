@@ -19,6 +19,7 @@ def calc_score(
     fix_rate: int,
     delta_range_inv: int,
     delta_cost_w: int,
+    atk_eval_rate: int,
 ):
     c = 1 << cb
 #    subprocess.getoutput("cargo build --release")
@@ -41,6 +42,7 @@ def calc_score(
         cmd += " {}".format(fix_rate)
         cmd += " {}".format(delta_range_inv)
         cmd += " {}".format(delta_cost_w)
+        cmd += " {}".format(atk_eval_rate)
         cmd += " < tools/in{}".format(c) + "/{0:04d}.txt".format(i)
         #cmd += " > tools/out/out{0:04d}.txt".format(i)
         ret = subprocess.getoutput(cmd)
@@ -54,7 +56,7 @@ def calc_score(
     ave_score = score_sum / score_norm
     with open("optuna{}.csv".format(c), "a") as f:
         f.write(
-            "    Param {{eff: {}, key_power: {}, key_exca_th: {}, observe_power: {}, observe_exca_th: {}, connect_power: {}, connect_exca_th: {}, evalw: {}, fix_rate: {}, delta_range_inv: {}, delta_cost_w: {}, }},,{},{},{}\n".format(
+            "    Param {{eff: {}, key_power: {}, key_exca_th: {}, observe_power: {}, observe_exca_th: {}, connect_power: {}, connect_exca_th: {}, evalw: {}, fix_rate: {}, delta_range_inv: {}, delta_cost_w: {}, atk_eval_rate: {}, }},,{},{},{}\n".format(
                 eff,
                 key_power,
                 key_exca_th,
@@ -66,6 +68,7 @@ def calc_score(
                 fix_rate,
                 delta_range_inv,
                 delta_cost_w,
+                atk_eval_rate,
                 ave_score,
                 worst_case,
                 score_worst,
@@ -74,109 +77,124 @@ def calc_score(
     return ave_score
 
 def objective0(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(0, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(0, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective1(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(1, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(1, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective2(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(2, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(2, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective3(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(3, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(3, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective4(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(4, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(4, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective5(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(5, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(5, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective6(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(6, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(6, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
+
 def objective7(trial):
-    eff = trial.suggest_int("eff", 2, 30)
+    eff = trial.suggest_int("eff", 10, 20)
     key_power = trial.suggest_int("key_power", 1, 1000)
     key_exca_th = trial.suggest_int("key_exca_th", 1, 2500)
     observe_power = trial.suggest_int("observe_power", 1, 1000)
     observe_exca_th = trial.suggest_int("observe_exca_th", 1, 2500)
-    connect_power = trial.suggest_int("connect_power", 1, 1000)
-    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 2500)
-    evalw = trial.suggest_int("evalw", 1, 64)
+    connect_power = trial.suggest_int("connect_power", 1, 200)
+    connect_exca_th = trial.suggest_int("connect_exca_th", 1, 500)
+    evalw = trial.suggest_int("evalw", 1, 50)
     fix_rate = trial.suggest_int("fix_rate", 1, 256)
     delta_range_inv = trial.suggest_int("delta_range_inv", 2, 30)
     delta_cost_w = trial.suggest_int("delta_cost_w", 1, 32)
-    return calc_score(7, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w)
+    atk_eval_rate = trial.suggest_int("atk_eval_rate", 1, 32)
+    return calc_score(7, eff, key_power, key_exca_th, observe_power, observe_exca_th, connect_power, connect_exca_th, evalw, fix_rate, delta_range_inv, delta_cost_w, atk_eval_rate)
 
 objectives = [
     objective0,
