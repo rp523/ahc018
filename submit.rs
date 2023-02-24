@@ -260,12 +260,12 @@ static mut PARAM: Param = Param {
     delta_cost_w: 0,
     atk_eval_rate: 0
 };
-// 1099138.2859999998 137392.28574999998
+// 1097226.072 137153.259
 const PARAMS: [Param; 8] = [
-    Param {eff: 12, key_power: 7, key_exca_th: 351, observe_power: 15, observe_exca_th: 66, connect_power: 16, connect_exca_th: 280, evalw: 12, fix_rate: 116, delta_range: 1, delta_cost_w: 22, atk_eval_rate: 1, },
+    Param {eff: 12, key_power: 10, key_exca_th: 301, observe_power: 15, observe_exca_th: 66, connect_power: 13, connect_exca_th: 290, evalw: 12, fix_rate: 126, delta_range: 2, delta_cost_w: 22, atk_eval_rate: 1, },
     Param {eff: 13, key_power: 16, key_exca_th: 451, observe_power: 15, observe_exca_th: 56, connect_power: 22, connect_exca_th: 100, evalw: 16, fix_rate: 41, delta_range: 1, delta_cost_w: 22, atk_eval_rate: 1, },
     Param {eff: 15, key_power: 37, key_exca_th: 501, observe_power: 30, observe_exca_th: 36, connect_power: 34, connect_exca_th: 340, evalw: 12, fix_rate: 31, delta_range: 2, delta_cost_w: 22, atk_eval_rate: 1, },
-    Param {eff: 17, key_power: 34, key_exca_th: 901, observe_power: 35, observe_exca_th: 41, connect_power: 40, connect_exca_th: 320, evalw: 12, fix_rate: 151, delta_range: 2, delta_cost_w: 10, atk_eval_rate: 1, },
+    Param {eff: 12, key_power: 34, key_exca_th: 851, observe_power: 40, observe_exca_th: 36, connect_power: 40, connect_exca_th: 300, evalw: 12, fix_rate: 151, delta_range: 2, delta_cost_w: 10, atk_eval_rate: 1, },
     Param {eff: 12, key_power: 46, key_exca_th: 1001, observe_power: 50, observe_exca_th: 1, connect_power: 46, connect_exca_th: 220, evalw: 20, fix_rate: 201, delta_range: 1, delta_cost_w: 10, atk_eval_rate: 2, },
     Param {eff: 13, key_power: 61, key_exca_th: 101, observe_power: 55, observe_exca_th: 21, connect_power: 64, connect_exca_th: 390, evalw: 12, fix_rate: 116, delta_range: 1, delta_cost_w: 31, atk_eval_rate: 3, },
     Param {eff: 14, key_power: 94, key_exca_th: 2251, observe_power: 85, observe_exca_th: 71, connect_power: 97, connect_exca_th: 20, evalw: 12, fix_rate: 236, delta_range: 2, delta_cost_w: 31, atk_eval_rate: 2, },
