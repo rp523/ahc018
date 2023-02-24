@@ -260,15 +260,16 @@ static mut PARAM: Param = Param {
     delta_cost_w: 0,
     atk_eval_rate: 0
 };
+// 1100481.558 137560.19475
 const PARAMS: [Param; 8] = [
-    Param {eff: 13,  key_power: 3,  key_exca_th: 2063,  observe_power: 95,  observe_exca_th: 16,  connect_power: 30,  connect_exca_th: 268,  evalw: 8,  fix_rate: 83,  delta_range: 5,  delta_cost_w: 18,  atk_eval_rate: 1,  },
-    Param {eff: 17,  key_power: 41,  key_exca_th: 1120,  observe_power: 20,  observe_exca_th: 98,  connect_power: 34,  connect_exca_th: 229,  evalw: 29,  fix_rate: 53,  delta_range: 11,  delta_cost_w: 28,  atk_eval_rate: 30,  },
-    Param {eff: 15,  key_power: 120,  key_exca_th: 289,  observe_power: 104,  observe_exca_th: 163,  connect_power: 40,  connect_exca_th: 385,  evalw: 15,  fix_rate: 33,  delta_range: 11,  delta_cost_w: 22,  atk_eval_rate: 14,  }, 
-    Param {eff: 12,  key_power: 97,  key_exca_th: 5,  observe_power: 141,  observe_exca_th: 11,  connect_power: 66,  connect_exca_th: 145,  evalw: 39,  fix_rate: 71,  delta_range: 7,  delta_cost_w: 28,  atk_eval_rate: 6,  }, 
-    Param {eff: 13,  key_power: 33,  key_exca_th: 1334,  observe_power: 108,  observe_exca_th: 77,  connect_power: 99,  connect_exca_th: 293,  evalw: 6,  fix_rate: 239,  delta_range: 15,  delta_cost_w: 15,  atk_eval_rate: 18,  }, 
-    Param {eff: 12,  key_power: 293,  key_exca_th: 1411,  observe_power: 46,  observe_exca_th: 30,  connect_power: 61,  connect_exca_th: 410,  evalw: 6,  fix_rate: 4,  delta_range: 20,  delta_cost_w: 12,  atk_eval_rate: 4,  }, 
-    Param {eff: 18,  key_power: 146,  key_exca_th: 513,  observe_power: 84,  observe_exca_th: 41,  connect_power: 121,  connect_exca_th: 25,  evalw: 6,  fix_rate: 55,  delta_range: 25,  delta_cost_w: 29,  atk_eval_rate: 19,  }, 
-    Param {eff: 14,  key_power: 96,  key_exca_th: 591,  observe_power: 83,  observe_exca_th: 117,  connect_power: 88,  connect_exca_th: 105,  evalw: 13,  fix_rate: 5,  delta_range: 5,  delta_cost_w: 9,  atk_eval_rate: 3,  }, 
+        Param {eff: 12,  key_power: 7,  key_exca_th: 351,  observe_power: 15,  observe_exca_th: 66,  connect_power: 16,  connect_exca_th: 280,  evalw: 12,  fix_rate: 116,  delta_range: 1,  delta_cost_w: 22,  atk_eval_rate: 1,  }, //88152.621, 501, 595496\n]
+        Param {eff: 13,  key_power: 19,  key_exca_th: 551,  observe_power: 15,  observe_exca_th: 66,  connect_power: 22,  connect_exca_th: 100,  evalw: 16,  fix_rate: 46,  delta_range: 1,  delta_cost_w: 10,  atk_eval_rate: 1,  }, //91555.761, 449, 680508\n]
+        Param {eff: 15,  key_power: 37,  key_exca_th: 501,  observe_power: 30,  observe_exca_th: 36,  connect_power: 34,  connect_exca_th: 340,  evalw: 12,  fix_rate: 31,  delta_range: 2,  delta_cost_w: 22,  atk_eval_rate: 1,  }, //98993.833, 449, 709630\n]
+        Param {eff: 17,  key_power: 37,  key_exca_th: 551,  observe_power: 35,  observe_exca_th: 41,  connect_power: 46,  connect_exca_th: 380,  evalw: 12,  fix_rate: 81,  delta_range: 2,  delta_cost_w: 7,  atk_eval_rate: 1,  }, //111072.635, 355, 608231\n]
+        Param {eff: 12,  key_power: 49,  key_exca_th: 801,  observe_power: 45,  observe_exca_th: 16,  connect_power: 40,  connect_exca_th: 140,  evalw: 20,  fix_rate: 191,  delta_range: 1,  delta_cost_w: 10,  atk_eval_rate: 2,  }, //125165.79, 449, 847974\n]
+        Param {eff: 13,  key_power: 58,  key_exca_th: 1,  observe_power: 55,  observe_exca_th: 16,  connect_power: 64,  connect_exca_th: 360,  evalw: 12,  fix_rate: 121,  delta_range: 1,  delta_cost_w: 28,  atk_eval_rate: 3,  }, //146771.478, 449, 830953\n]
+        Param {eff: 14,  key_power: 88,  key_exca_th: 2451,  observe_power: 90,  observe_exca_th: 86,  connect_power: 97,  connect_exca_th: 10,  evalw: 12,  fix_rate: 256,  delta_range: 1,  delta_cost_w: 28,  atk_eval_rate: 2,  }, //185485.477, 449, 906032\n]
+        Param {eff: 14,  key_power: 133,  key_exca_th: 1401,  observe_power: 90,  observe_exca_th: 11,  connect_power: 127,  connect_exca_th: 50,  evalw: 8,  fix_rate: 76,  delta_range: 1,  delta_cost_w: 25,  atk_eval_rate: 2,  }, //253283.963', '449', '1090568\n']
 ];
 
 fn get_param() -> &'static Param {
