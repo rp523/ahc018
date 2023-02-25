@@ -260,12 +260,12 @@ static mut PARAM: Param = Param {
     delta_cost_w: 0,
     atk_eval_rate: 0
 };
-// 1093492.7119999998 136686.58899999998
+// 1092398.14 136549.7675
 const PARAMS: [Param; 8] = [
     Param {eff: 12, key_power: 13, key_exca_th: 51, observe_power: 15, observe_exca_th: 71, connect_power: 13, connect_exca_th: 250, evalw: 12, fix_rate: 141, delta_range: 2, delta_cost_w: 25, atk_eval_rate: 1, },
     Param {eff: 13, key_power: 22, key_exca_th: 401, observe_power: 20, observe_exca_th: 41, connect_power: 22, connect_exca_th: 120, evalw: 16, fix_rate: 61, delta_range: 1, delta_cost_w: 25, atk_eval_rate: 1, },
-    Param {eff: 15, key_power: 19, key_exca_th: 1151, observe_power: 25, observe_exca_th: 71, connect_power: 31, connect_exca_th: 290, evalw: 12, fix_rate: 31, delta_range: 2, delta_cost_w: 28, atk_eval_rate: 1, },
-    Param {eff: 13, key_power: 34, key_exca_th: 751, observe_power: 50, observe_exca_th: 11, connect_power: 34, connect_exca_th: 280, evalw: 12, fix_rate: 96, delta_range: 2, delta_cost_w: 10, atk_eval_rate: 3, },
+    Param {eff: 14, key_power: 19, key_exca_th: 1051, observe_power: 20, observe_exca_th: 56, connect_power: 25, connect_exca_th: 240, evalw: 12, fix_rate: 81, delta_range: 2, delta_cost_w: 31, atk_eval_rate: 1, },
+    Param {eff: 13, key_power: 34, key_exca_th: 651, observe_power: 60, observe_exca_th: 21, connect_power: 37, connect_exca_th: 40, evalw: 12, fix_rate: 91, delta_range: 2, delta_cost_w: 25, atk_eval_rate: 2, },
     Param {eff: 13, key_power: 37, key_exca_th: 1801, observe_power: 55, observe_exca_th: 6, connect_power: 58, connect_exca_th: 220, evalw: 16, fix_rate: 206, delta_range: 1, delta_cost_w: 28, atk_eval_rate: 2, },
     Param {eff: 13, key_power: 70, key_exca_th: 2401, observe_power: 55, observe_exca_th: 6, connect_power: 70, connect_exca_th: 170, evalw: 12, fix_rate: 131, delta_range: 1, delta_cost_w: 31, atk_eval_rate: 3, },
     Param {eff: 14, key_power: 85, key_exca_th: 901, observe_power: 75, observe_exca_th: 61, connect_power: 91, connect_exca_th: 80, evalw: 12, fix_rate: 181, delta_range: 2, delta_cost_w: 31, atk_eval_rate: 2, },
@@ -824,4 +824,3 @@ impl Solver {
         Self::connect_waters_to_near_observer(&mut self.state, &observers, &near_observers_for_each_water, &self.waters, &self.houses);
     }
 }
-
