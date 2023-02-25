@@ -260,9 +260,9 @@ static mut PARAM: Param = Param {
     delta_cost_w: 0,
     atk_eval_rate: 0
 };
-// 1090945.2159999998 136368.15199999997
+// 1090939.2149999999 136367.40187499998
 const PARAMS: [Param; 8] = [
-    Param {eff: 13, key_power: 22, key_exca_th: 1151, observe_power: 20, observe_exca_th: 76, connect_power: 19, connect_exca_th: 170, evalw: 12, fix_rate: 131, delta_range: 2, delta_cost_w: 28, atk_eval_rate: 1, },
+    Param {eff: 14, key_power: 19, key_exca_th: 1051, observe_power: 30, observe_exca_th: 81, connect_power: 19, connect_exca_th: 180, evalw: 12, fix_rate: 126, delta_range: 2, delta_cost_w: 28, atk_eval_rate: 1, },
     Param {eff: 13, key_power: 22, key_exca_th: 451, observe_power: 25, observe_exca_th: 51, connect_power: 25, connect_exca_th: 100, evalw: 16, fix_rate: 81, delta_range: 1, delta_cost_w: 25, atk_eval_rate: 1, },
     Param {eff: 14, key_power: 19, key_exca_th: 1051, observe_power: 20, observe_exca_th: 56, connect_power: 25, connect_exca_th: 240, evalw: 12, fix_rate: 81, delta_range: 2, delta_cost_w: 31, atk_eval_rate: 1, },
     Param {eff: 13, key_power: 43, key_exca_th: 651, observe_power: 60, observe_exca_th: 21, connect_power: 31, connect_exca_th: 40, evalw: 12, fix_rate: 101, delta_range: 2, delta_cost_w: 25, atk_eval_rate: 2, },
